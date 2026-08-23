@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { computePrice } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
@@ -284,7 +284,7 @@ export default function DayBoard() {
             <tr className="border-b border-gray-200 bg-gray-50">
               <th className="sticky left-0 bg-gray-50 p-3 text-left" rowSpan={2}>Ngày</th>
               {platforms.map((p) => (
-                <th key={p.id} colSpan={2} className="border-l border-gray-200 p-2 text-center">
+                <th key={p.id} colSpan={2} className="border-l border-gray-200 p-2 pb-1 text-center">
                   <div className="flex items-center justify-center gap-1.5">
                     <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: p.color ?? '#94a3b8' }} />
                     {p.name}
@@ -297,14 +297,18 @@ export default function DayBoard() {
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
                   </div>
+                  <div className="text-[11px] font-normal text-gray-400">
+                    {RULE_SHORT[p.discountRule] ?? ''} · hoa hồng {p.commissionRate}%
+                  </div>
                 </th>
               ))}
             </tr>
             <tr className="border-b border-gray-200 bg-gray-50">
               {platforms.map((p) => (
-                <td key={p.id} className="border-l border-gray-200 p-2 text-center text-xs text-gray-500" colSpan={2}>
-                  <span className="font-medium text-gray-700">Giá cài đặt</span> · {RULE_SHORT[p.discountRule] ?? ''} · {p.commissionRate}%
-                </td>
+                <Fragment key={p.id}>
+                  <th className="border-l border-gray-200 p-2 text-center text-xs font-medium text-gray-700">Giá cài đặt</th>
+                  <th className="border-r border-gray-200 p-2 text-center text-xs font-medium text-gray-700">Ròng (sau phí)</th>
+                </Fragment>
               ))}
             </tr>
           </thead>
@@ -327,21 +331,30 @@ export default function DayBoard() {
                       ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo })
                       : null;
                     return (
-                      <td key={p.id} className="border-l border-gray-200 p-2 text-center align-middle">
-                        {breakdown ? (
-                          <div className={promo.length > 0 ? 'rounded-xl bg-blue-50 py-1' : ''}>
-                            {promo.length > 0 && (
-                              <div className="mb-0.5 text-[10px] font-medium text-blue-600">Khuyến mãi</div>
-                            )}
-                            <div className="font-semibold text-gray-900">{formatVND(breakdown.guestPrice)}</div>
-                            <div className="text-[10px] text-gray-400">
-                              phí {p.commissionRate}% · {formatVND(breakdown.commission)}
+                      <Fragment key={p.id}>
+                        <td className="border-l border-gray-200 p-2 text-center align-middle">
+                          {breakdown ? (
+                            <div className={promo.length > 0 ? 'rounded-xl bg-blue-50 py-1' : ''}>
+                              {promo.length > 0 && (
+                                <div className="mb-0.5 text-[10px] font-medium text-blue-600">Khuyến mãi</div>
+                              )}
+                              <div className="font-semibold text-gray-900">{formatVND(breakdown.guestPrice)}</div>
+                              <div className="text-[10px] text-gray-400">
+                                phí {p.commissionRate}% · {formatVND(breakdown.commission)}
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <span className="text-gray-300">—</span>
-                        )}
-                      </td>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </td>
+                        <td className="border-r border-gray-200 p-2 text-center align-middle">
+                          {breakdown ? (
+                            <div className="font-semibold text-green-600">{formatVND(breakdown.net)}</div>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </td>
+                      </Fragment>
                     );
                   })}
                 </tr>
