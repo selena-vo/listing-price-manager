@@ -280,7 +280,13 @@ export default function DayBoard() {
                               {promo.length > 0 && (
                                 <div className="mb-0.5 text-[10px] font-medium text-blue-600">Khuyến mãi</div>
                               )}
-                              <div className="font-semibold text-gray-900">{formatVND(breakdown.guestPrice)}</div>
+                              {/* Giá cài đặt (gốc); khi có khuyến mãi, gạch ngang + hiện giá khuyến mãi đã tính */}
+                              <div className={promo.length > 0 ? 'text-[11px] text-gray-400 line-through' : 'font-semibold text-gray-900'}>
+                                {formatVND(price!.pricePerNight)}
+                              </div>
+                              {promo.length > 0 && (
+                                <div className="font-semibold text-blue-700">{formatVND(breakdown.guestPrice)}</div>
+                              )}
                               <div className="text-[10px] text-gray-400">
                                 phí {p.commissionRate}% · {formatVND(breakdown.commission)}
                               </div>
