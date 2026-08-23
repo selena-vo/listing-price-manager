@@ -16,7 +16,7 @@ import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 type DPlatform = Platform & { campaigns: Campaign[] };
-type DListing = Listing & { prices: ListingPrice[] };
+type DListing = Listing & { prices: ListingPrice[]; platformIds: number[] };
 interface DashboardData {
   platforms: DPlatform[];
   listings: DListing[];
@@ -157,6 +157,7 @@ export default function DayBoard() {
   const platforms = data?.platforms ?? [];
   const listings = data?.listings ?? [];
   const selectedListing = listings.find((l) => l.id === listingId) ?? listings[0];
+  const boardPlatforms = platforms.filter((p) => selectedListing?.platformIds?.includes(p.id));
 
   const days = useMemo(() => {
     const count = new Date(view.year, view.month + 1, 0).getDate();
@@ -174,9 +175,21 @@ export default function DayBoard() {
   if (error) return <div className="p-8 text-red-600">Không tải được dữ liệu.</div>;
   if (platforms.length === 0) {
     return (
-      <section className="p-4 lg:p-8">
+      <section className="p-4 lg:p-6">
         <h1 className="mb-2 text-2xl font-semibold">Bảng giá theo ngày</h1>
         <p className="mb-4 text-gray-500">Chưa có nền tảng nào. Thêm nền tảng để bắt đầu theo dõi giá.</p>
+        <Button asChild><a href="/dashboard/platforms">Đi tới Nền tảng</a></Button>
+      </section>
+    );
+  }
+  if (boardPlatforms.length === 0) {
+    return (
+      <section className="p-4 lg:p-6">
+        <h1 className="mb-2 text-2xl font-semibold">Bảng giá theo ngày</h1>
+        <p className="mb-4 text-gray-500">
+          Listing <span className="font-medium">{selectedListing?.name ?? '—'}</span> chưa gắn nền tảng nào. Mở
+          sửa listing (biểu tượng ✎/khu vực listing) để chọn nền tảng.
+        </p>
         <Button asChild><a href="/dashboard/platforms">Đi tới Nền tảng</a></Button>
       </section>
     );
@@ -210,7 +223,7 @@ export default function DayBoard() {
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
               <th className="sticky left-0 bg-gray-50 p-3 text-left" rowSpan={2}>Ngày</th>
-              {platforms.map((p) => (
+              {boardPlatforms.map((p) => (
                 <th key={p.id} colSpan={2} className="border-l border-gray-200 p-2 pb-1 text-center">
                   <div className="flex items-center justify-center gap-1.5">
                     <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: p.color ?? '#94a3b8' }} />
@@ -231,7 +244,7 @@ export default function DayBoard() {
               ))}
             </tr>
             <tr className="border-b border-gray-200 bg-gray-50">
-              {platforms.map((p) => (
+              {boardPlatforms.map((p) => (
                 <Fragment key={p.id}>
                   <th className="border-l border-gray-200 p-2 text-center text-xs font-medium text-gray-700">Giá cài đặt</th>
                   <th className="border-r border-gray-200 p-2 text-center text-xs font-medium text-gray-700">Ròng (sau phí)</th>
@@ -251,7 +264,7 @@ export default function DayBoard() {
                     <div className="text-xs text-gray-400">{WEEKDAYS[d.getDay()]}</div>
                     {isToday && <div className="mt-0.5 text-[10px] font-medium text-teal-600">Hôm nay</div>}
                   </td>
-                  {platforms.map((p) => {
+                  {boardPlatforms.map((p) => {
                     const price = selectedListing?.prices.find((x) => x.platformId === p.id) ?? null;
                     const promo = price ? activeOnDate(p, d) : [];
                     const breakdown = price
@@ -293,7 +306,7 @@ export default function DayBoard() {
 
       {/* Footer legend note */}
       <p className="mt-3 text-xs text-gray-400">
-        Cột là {platforms.map((p) => p.name).join(' · ')}. Ngày in đậm có khuyến mãi; click biểu tượng ✎ ở tên nền tảng để đặt giá cơ bản.
+        Cột là {boardPlatforms.map((p) => p.name).join(' · ')}. Ngày in đậm có khuyến mãi; click biểu tượng ✎ ở tên nền tảng để đặt giá cơ bản.
       </p>
 
       {baseTarget && (

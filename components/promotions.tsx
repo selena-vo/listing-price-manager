@@ -14,7 +14,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 type DPlatform = Platform & { campaigns: Campaign[] };
 interface Data {
   platforms: DPlatform[];
-  listings: { id: number; name: string }[];
+  listings: { id: number; name: string; platformIds: number[] }[];
 }
 
 function CampaignRow({ campaign, showPriority, onChanged }: { campaign: Campaign; showPriority: boolean; onChanged: () => void }) {
@@ -171,9 +171,9 @@ export default function PromotionsPage() {
   if (isLoading) return <div className="p-8 text-gray-500">Đang tải…</div>;
   if (error) return <div className="p-8 text-red-600">Không tải được dữ liệu.</div>;
 
-  const platforms = data?.platforms ?? [];
   const listings = data?.listings ?? [];
   const selected = listings.find((l) => l.id === listingId) ?? listings[0];
+  const platforms = (data?.platforms ?? []).filter((p) => selected?.platformIds?.includes(p.id));
 
   return (
     <section className="p-4 lg:p-8">

@@ -196,13 +196,30 @@ export const campaigns = pgTable('campaigns', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Per-listing platform selection — each listing uses only its assigned platforms (SPEC §5).
+export const listingPlatforms = pgTable(
+  'listing_platforms',
+  {
+    id: serial('id').primaryKey(),
+    listingId: integer('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    platformId: integer('platform_id')
+      .notNull()
+      .references(() => platforms.id, { onDelete: 'cascade' }),
+  },
+  (t) => [uniqueIndex('listing_platforms_listing_platform_unique').on(t.listingId, t.platformId)],
+);
+
 export const platformsRelations = relations(platforms, ({ many }) => ({
   campaigns: many(campaigns),
   listingPrices: many(listingPrices),
+  listingPlatforms: many(listingPlatforms),
 }));
 
 export const listingsRelations = relations(listings, ({ many }) => ({
   listingPrices: many(listingPrices),
+  listingPlatforms: many(listingPlatforms),
 }));
 
 export const campaignsRelations = relations(campaigns, ({ one }) => ({
@@ -222,6 +239,20 @@ export const listingPricesRelations = relations(listingPrices, ({ one }) => ({
     references: [platforms.id],
   }),
 }));
+
+export const listingPlatformsRelations = relations(listingPlatforms, ({ one }) => ({
+  listing: one(listings, {
+    fields: [listingPlatforms.listingId],
+    references: [listings.id],
+  }),
+  platform: one(platforms, {
+    fields: [listingPlatforms.platformId],
+    references: [platforms.id],
+  }),
+}));
+
+export type ListingPlatform = typeof listingPlatforms.$inferSelect;
+export type NewListingPlatform = typeof listingPlatforms.$inferInsert;
 
 export type Platform = typeof platforms.$inferSelect;
 export type NewPlatform = typeof platforms.$inferInsert;

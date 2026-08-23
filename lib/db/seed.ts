@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { stripe } from '../payments/stripe';
 import { db } from './drizzle';
-import { users, teams, teamMembers, platforms, listings, listingPrices, campaigns } from './schema';
+import { users, teams, teamMembers, platforms, listings, listingPrices, listingPlatforms, campaigns } from './schema';
 import { hashPassword } from '@/lib/auth/session';
 import { PLATFORM_PRESETS } from '@/lib/pricing';
 
@@ -95,6 +95,10 @@ async function seedPlatformsAndDemoData() {
       currency: 'VND',
       note: null,
     })),
+  );
+
+  await db.insert(listingPlatforms).values(
+    platformRows.map((p) => ({ listingId: demo.id, platformId: p.id })),
   );
 
   const airbnb = platformRows.find((p) => p.name === 'Airbnb');
