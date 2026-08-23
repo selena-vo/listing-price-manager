@@ -181,8 +181,12 @@ export const listingPrices = pgTable(
   (t) => [uniqueIndex('listing_prices_listing_platform_unique').on(t.listingId, t.platformId)],
 );
 
+// Promotions are per-LISTING (each listing has its own campaigns) on a platform (SPEC v1.1).
 export const campaigns = pgTable('campaigns', {
   id: serial('id').primaryKey(),
+  listingId: integer('listing_id')
+    .notNull()
+    .references(() => listings.id, { onDelete: 'cascade' }),
   platformId: integer('platform_id')
     .notNull()
     .references(() => platforms.id, { onDelete: 'cascade' }),
@@ -220,12 +224,17 @@ export const platformsRelations = relations(platforms, ({ many }) => ({
 export const listingsRelations = relations(listings, ({ many }) => ({
   listingPrices: many(listingPrices),
   listingPlatforms: many(listingPlatforms),
+  campaigns: many(campaigns),
 }));
 
 export const campaignsRelations = relations(campaigns, ({ one }) => ({
   platform: one(platforms, {
     fields: [campaigns.platformId],
     references: [platforms.id],
+  }),
+  listing: one(listings, {
+    fields: [campaigns.listingId],
+    references: [listings.id],
   }),
 }));
 

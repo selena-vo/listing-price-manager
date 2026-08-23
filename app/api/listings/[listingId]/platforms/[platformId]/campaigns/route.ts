@@ -1,22 +1,23 @@
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
-import { platforms, campaigns } from '@/lib/db/schema';
+import { platforms, listings, campaigns } from '@/lib/db/schema';
 import { CAMPAIGN_TYPES, type CampaignType } from '@/lib/pricing';
 import { errorResponse, parseId } from '@/lib/api/helpers';
 
-type Ctx = { params: Promise<{ platformId: string }> };
+type Ctx = { params: Promise<{ listingId: string; platformId: string }> };
 
-// POST /api/platforms/:platformId/campaigns — create a campaign (SPEC §5).
+// POST /api/listings/:listingId/platforms/:platformId/campaigns — create a listing's campaign.
 export async function POST(req: Request, ctx: Ctx) {
-  const { platformId: raw } = await ctx.params;
-  const platformId = parseId(raw);
-  if (!platformId) return errorResponse(400, 'VALIDATION_ERROR', 'invalid platform id');
+  const { listingId: rawL, platformId: rawP } = await ctx.params;
+  const listingId = parseId(rawL);
+  const platformId = parseId(rawP);
+  if (!listingId || !platformId) {
+    return errorResponse(400, 'VALIDATION_ERROR', 'invalid listingId or platformId');
+  }
 
-  const [platform] = await db
-    .select({ id: platforms.id })
-    .from(platforms)
-    .where(eq(platforms.id, platformId))
-    .limit(1);
+  const [listing] = await db.select({ id: listings.id }).from(listings).where(eq(listings.id, listingId)).limit(1);
+  const [platform] = await db.select({ id: platforms.id }).from(platforms).where(eq(platforms.id, platformId)).limit(1);
+  if (!listing) return errorResponse(404, 'NOT_FOUND', 'listing not found');
   if (!platform) return errorResponse(404, 'NOT_FOUND', 'platform not found');
 
   const body = await req.json().catch(() => null);
@@ -32,11 +33,7 @@ export async function POST(req: Request, ctx: Ctx) {
     }
   }
   if (body.type !== undefined && body.type !== null && !CAMPAIGN_TYPES.includes(body.type as CampaignType)) {
-    return errorResponse(
-      400,
-      'VALIDATION_ERROR',
-      `type must be one of: ${CAMPAIGN_TYPES.join(', ')}`,
-    );
+    return errorResponse(400, 'VALIDATION_ERROR', `type must be one of: ${CAMPAIGN_TYPES.join(', ')}`);
   }
 
   const startsAt = body.startsAt ? new Date(body.startsAt) : null;
@@ -48,6 +45,7 @@ export async function POST(req: Request, ctx: Ctx) {
   const [row] = await db
     .insert(campaigns)
     .values({
+      listingId,
       platformId,
       name: body.name.trim(),
       discountPercent: body.discountPercent,

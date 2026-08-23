@@ -11,10 +11,15 @@ import { Trash2, Plus } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-type DPlatform = Platform & { campaigns: Campaign[] };
+interface ListingWithCampaigns {
+  id: number;
+  name: string;
+  platformIds: number[];
+  campaigns: Campaign[];
+}
 interface Data {
-  platforms: DPlatform[];
-  listings: { id: number; name: string; platformIds: number[] }[];
+  platforms: Platform[];
+  listings: ListingWithCampaigns[];
 }
 
 function CampaignRow({ campaign, showPriority, onChanged }: { campaign: Campaign; showPriority: boolean; onChanged: () => void }) {
@@ -96,7 +101,7 @@ function CampaignRow({ campaign, showPriority, onChanged }: { campaign: Campaign
   );
 }
 
-function AddCampaignForm({ platform, onDone }: { platform: DPlatform; onDone: () => void }) {
+function AddCampaignForm({ listingId, platform, onDone }: { listingId: number; platform: Platform; onDone: () => void }) {
   const { mutate } = useSWRConfig();
   const [name, setName] = useState('');
   const [percent, setPercent] = useState('');
@@ -109,16 +114,10 @@ function AddCampaignForm({ platform, onDone }: { platform: DPlatform; onDone: ()
     const pct = Number(percent);
     if (!name.trim() || !Number.isInteger(pct) || pct < 0 || pct > 100) return;
     setSaving(true);
-    const res = await fetch(`/api/platforms/${platform.id}/campaigns`, {
+    const res = await fetch(`/api/listings/${listingId}/platforms/${platform.id}/campaigns`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.trim(),
-        discountPercent: pct,
-        active,
-        startsAt: startsAt || null,
-        endsAt: endsAt || null,
-      }),
+      body: JSON.stringify({ name: name.trim(), discountPercent: pct, active, startsAt: startsAt || null, endsAt: endsAt || null }),
     });
     setSaving(false);
     if (res.ok) {
@@ -162,7 +161,7 @@ function AddCampaignForm({ platform, onDone }: { platform: DPlatform; onDone: ()
   );
 }
 
-// --- S5 — Khuyến mãi (promotions) ---
+// --- S5 — Khuyến mãi (per listing) ---
 export default function PromotionsPage() {
   const { data, error, isLoading } = useSWR<Data>('/api/dashboard', fetcher);
   const { listingId } = useListing();
@@ -180,12 +179,16 @@ export default function PromotionsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Khuyến mãi</h1>
         <p className="text-sm text-gray-500">
-          Trang này áp cho listing <span className="font-medium">{selected?.name ?? '—'}</span> — các chiến dịch giảm giá theo khoảng ngày.
+          Khuyến mãi riêng của listing <span className="font-medium">{selected?.name ?? '—'}</span>, theo từng nền tảng và khoảng thời gian.
         </p>
       </div>
+      {platforms.length === 0 && (
+        <p className="text-sm text-gray-400">Listing này chưa gắn nền tảng nào — chọn nền tảng ở tab “Nền tảng” / khi sửa listing.</p>
+      )}
       <div className="space-y-6">
         {platforms.map((p) => {
           const showPriority = p.discountRule === 'priority' || p.discountRule === 'sequential';
+          const camps = (selected?.campaigns ?? []).filter((c) => c.platformId === p.id);
           return (
             <div key={p.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
@@ -194,17 +197,21 @@ export default function PromotionsPage() {
                   <h2 className="text-lg font-semibold">{p.name}</h2>
                   <span className="text-xs text-gray-400">({p.discountRule})</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setOpenForm(openForm === p.id ? null : p.id)}>
-                  <Plus className="mr-1 h-4 w-4" /> Thêm khuyến mãi
-                </Button>
+                {selected && (
+                  <Button variant="ghost" size="sm" onClick={() => setOpenForm(openForm === p.id ? null : p.id)}>
+                    <Plus className="mr-1 h-4 w-4" /> Thêm khuyến mãi
+                  </Button>
+                )}
               </div>
               <div className="space-y-2">
-                {p.campaigns.length === 0 && <p className="text-xs text-gray-400">Chưa có khuyến mãi nào.</p>}
-                {p.campaigns.map((c) => (
+                {camps.length === 0 && <p className="text-xs text-gray-400">Chưa có khuyến mãi nào trên {p.name}.</p>}
+                {camps.map((c) => (
                   <CampaignRow key={c.id} campaign={c} showPriority={showPriority} onChanged={() => undefined} />
                 ))}
               </div>
-              {openForm === p.id && <AddCampaignForm platform={p} onDone={() => setOpenForm(null)} />}
+              {openForm === p.id && selected && (
+                <AddCampaignForm listingId={selected.id} platform={p} onDone={() => setOpenForm(null)} />
+              )}
             </div>
           );
         })}

@@ -15,8 +15,8 @@ import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-type DPlatform = Platform & { campaigns: Campaign[] };
-type DListing = Listing & { prices: ListingPrice[]; platformIds: number[] };
+type DPlatform = Platform;
+type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
 interface DashboardData {
   platforms: DPlatform[];
   listings: DListing[];
@@ -38,9 +38,9 @@ function parseDateOnly(iso: string): Date {
   return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
 
-function activeOnDate(platform: DPlatform, date: Date): Campaign[] {
+function activeOnDate(campaigns: Campaign[], date: Date): Campaign[] {
   const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  return platform.campaigns.filter((c) => {
+  return campaigns.filter((c) => {
     if (!c.active) return false;
     if (c.startsAt && day.getTime() < parseDateOnly(c.startsAt).getTime()) return false;
     if (c.endsAt && day.getTime() > parseDateOnly(c.endsAt).getTime()) return false;
@@ -266,7 +266,9 @@ export default function DayBoard() {
                   </td>
                   {boardPlatforms.map((p) => {
                     const price = selectedListing?.prices.find((x) => x.platformId === p.id) ?? null;
-                    const promo = price ? activeOnDate(p, d) : [];
+                    const promo = price
+                      ? activeOnDate(selectedListing.campaigns.filter((c) => c.platformId === p.id), d)
+                      : [];
                     const breakdown = price
                       ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo })
                       : null;

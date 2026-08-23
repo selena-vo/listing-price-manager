@@ -104,6 +104,7 @@ async function seedPlatformsAndDemoData() {
   const airbnb = platformRows.find((p) => p.name === 'Airbnb');
   if (airbnb) {
     await db.insert(campaigns).values({
+      listingId: demo.id,
       platformId: airbnb.id,
       name: 'New listing promo',
       discountPercent: 10,
