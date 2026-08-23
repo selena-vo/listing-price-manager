@@ -270,7 +270,7 @@ export default function DayBoard() {
                       ? activeOnDate(selectedListing.campaigns.filter((c) => c.platformId === p.id), d)
                       : [];
                     const breakdown = price
-                      ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo })
+                      ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo, now: d })
                       : null;
                     return (
                       <Fragment key={p.id}>

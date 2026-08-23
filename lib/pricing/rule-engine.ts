@@ -29,15 +29,23 @@ export interface PriceBreakdown {
   winningCampaignId: number | null; // set only for `priority` (single winner)
 }
 
+// Normalize to start-of-day so a campaign's date window is matched by CALENDAR day,
+// not by the exact timestamp (avoids timezone drift when computing past/future days).
+function startOfDay(input: string | Date | null): number {
+  if (!input) return Number.NaN;
+  const d = new Date(input);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
 function isActive(
   c: PriceInput['campaigns'][number],
   now: Date,
 ): boolean {
   if (!c.active) return false;
-  const t = now.getTime();
-  if (c.startsAt && new Date(c.startsAt).getTime() > t) return false;
-  if (c.endsAt && new Date(c.endsAt).getTime() < t) return false;
-  return true;
+  const day = startOfDay(now);
+  const s = c.startsAt ? startOfDay(c.startsAt) : Number.NEGATIVE_INFINITY;
+  const e = c.endsAt ? startOfDay(c.endsAt) : Number.POSITIVE_INFINITY;
+  return day >= s && day <= e;
 }
 
 export function computePrice({
