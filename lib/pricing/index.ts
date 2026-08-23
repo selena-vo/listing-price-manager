@@ -80,7 +80,7 @@ export const PLATFORM_PRESETS: readonly PlatformPreset[] = [
     key: 'airbnb',
     name: 'Airbnb',
     color: '#FF5A5F',
-    commissionRate: 15,
+    commissionRate: 3,
     discountRule: 'priority',
     campaignTypeOrder: ['new_listing', 'custom', 'length_of_stay', 'early_bird', 'last_minute'],
   },
@@ -95,7 +95,7 @@ export const PLATFORM_PRESETS: readonly PlatformPreset[] = [
     key: 'trip',
     name: 'Trip.com',
     color: '#0066CC',
-    commissionRate: 15,
+    commissionRate: 10,
     discountRule: 'sum',
   },
 ];
