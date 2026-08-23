@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut } from 'lucide-react';
+import { CircleIcon, Home, LogOut, Settings, Shield, Activity } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +63,24 @@ function UserMenu() {
           <Link href="/dashboard" className="flex w-full items-center">
             <Home className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <Link href="/dashboard/general" className="flex w-full items-center text-gray-600">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>General</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <Link href="/dashboard/activity" className="flex w-full items-center text-gray-600">
+            <Activity className="mr-2 h-4 w-4" />
+            <span>Activity</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <Link href="/dashboard/security" className="flex w-full items-center text-gray-600">
+            <Shield className="mr-2 h-4 w-4" />
+            <span>Security</span>
           </Link>
         </DropdownMenuItem>
         <form action={handleSignOut} className="w-full">

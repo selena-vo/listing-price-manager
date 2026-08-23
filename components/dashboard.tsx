@@ -3,13 +3,15 @@
 import { Fragment, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useListing } from '@/components/listing-context';
+import Modal from '@/components/modal';
+import ListingModal from '@/components/listing-modal';
 import { computePrice } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
 import { formatVND } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Pencil, Plus, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -46,21 +48,7 @@ function activeOnDate(platform: DPlatform, date: Date): Campaign[] {
   });
 }
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Đóng" className="text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
+// (Modal & ListingModal are now shared: components/modal.tsx & components/listing-modal.tsx)
 
 // --- S2 — set BASE price per (listing, platform) ---
 function BasePriceModal({
@@ -158,53 +146,6 @@ function BasePriceModal({
   );
 }
 
-// --- S3 — Add/Edit listing ---
-function ListingModal({ initial, onClose }: { initial?: Listing; onClose: () => void }) {
-  const [name, setName] = useState(initial?.name ?? '');
-  const [location, setLocation] = useState(initial?.location ?? '');
-  const [notes, setNotes] = useState(initial?.notes ?? '');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { mutate } = useSWRConfig();
-
-  async function save() {
-    if (!name.trim()) { setError('Tên listing là bắt buộc'); return; }
-    setSaving(true);
-    const res = await fetch(initial ? `/api/listings/${initial.id}` : '/api/listings', {
-      method: initial ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.trim(), location: location.trim() || null, notes: notes.trim() || null }),
-    });
-    if (!res.ok) { setError('Không lưu được.'); setSaving(false); return; }
-    await mutate('/api/dashboard');
-    onClose();
-  }
-
-  return (
-    <Modal title={initial ? 'Sửa listing' : 'Thêm listing'} onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="lname">Tên listing</Label>
-          <Input id="lname" value={name} onChange={(e) => setName(e.target.value)} className="mt-1" autoFocus />
-        </div>
-        <div>
-          <Label htmlFor="llocation">Vị trí (tùy chọn)</Label>
-          <Input id="llocation" value={location} onChange={(e) => setLocation(e.target.value)} className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="lnotes">Ghi chú (tùy chọn)</Label>
-          <Input id="lnotes" value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1" />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>Hủy</Button>
-          <Button onClick={save} disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu'}</Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 // --- S1 — Day price board ---
 export default function DayBoard() {
   const { data, error, isLoading } = useSWR<DashboardData>('/api/dashboard', fetcher);
@@ -212,7 +153,6 @@ export default function DayBoard() {
   const { listingId } = useListing();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [baseTarget, setBaseTarget] = useState<{ listing: DListing; platform: DPlatform; current: ListingPrice | null } | null>(null);
-  const [showAddListing, setShowAddListing] = useState(false);
 
   const platforms = data?.platforms ?? [];
   const listings = data?.listings ?? [];
@@ -261,9 +201,6 @@ export default function DayBoard() {
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setView({ year: today.getFullYear(), month: today.getMonth() })}>
             Về hôm nay
-          </Button>
-          <Button size="sm" onClick={() => setShowAddListing(true)}>
-            <Plus className="mr-1 h-4 w-4" /> Listing
           </Button>
         </div>
       </div>
@@ -367,7 +304,6 @@ export default function DayBoard() {
           onClose={() => setBaseTarget(null)}
         />
       )}
-      {showAddListing && <ListingModal onClose={() => setShowAddListing(false)} />}
     </section>
   );
 }

@@ -6,16 +6,8 @@ import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
 import { ListingProvider, useListing } from '@/components/listing-context';
-import {
-  CalendarDays,
-  Tag,
-  Globe,
-  LayoutDashboard,
-  Settings,
-  Shield,
-  Activity,
-  Menu
-} from 'lucide-react';
+import ListingModal from '@/components/listing-modal';
+import { CalendarDays, Tag, Globe, Menu, Plus } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -24,12 +16,13 @@ interface ListingRef {
   name: string;
 }
 
-// Global listing selector (shared across the 3 tabs).
+// Global listing selector + "+ Listing" (shared across the 3 tabs).
 function ListingBar() {
   const { listingId, setListingId } = useListing();
   const { data } = useSWR<{ listings: ListingRef[] }>('/api/dashboard', fetcher);
   const listings = data?.listings ?? [];
   const selectedId = listingId ?? listings[0]?.id ?? null;
+  const [showAdd, setShowAdd] = useState(false);
 
   return (
     <div className="border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
@@ -51,8 +44,12 @@ function ListingBar() {
               ))}
             </select>
           </label>
+          <Button size="sm" onClick={() => setShowAdd(true)}>
+            <Plus className="mr-1 h-4 w-4" /> Listing
+          </Button>
         </div>
       </div>
+      {showAdd && <ListingModal onClose={() => setShowAdd(false)} />}
     </div>
   );
 }
@@ -86,7 +83,7 @@ function TabBar() {
   );
 }
 
-// Starter-style sidebar menu (restored) + settings.
+// Starter-style sidebar menu (Menu only — Settings now live in the avatar dropdown).
 function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -96,26 +93,6 @@ function Sidebar({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/promotions', icon: Tag, label: 'Khuyến mãi' },
     { href: '/dashboard/platforms', icon: Globe, label: 'Nền tảng' }
   ];
-  const settings = [
-    { href: '/dashboard/general', icon: Settings, label: 'General' },
-    { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
-    { href: '/dashboard/security', icon: Shield, label: 'Security' }
-  ];
-
-  function Item({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-    return (
-      <Link href={href}>
-        <Button
-          variant={pathname === href ? 'secondary' : 'ghost'}
-          className={`my-1 w-full justify-start shadow-none ${pathname === href ? 'bg-gray-100' : ''}`}
-          onClick={() => setOpen(false)}
-        >
-          <Icon className="h-4 w-4" />
-          {label}
-        </Button>
-      </Link>
-    );
-  }
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -134,9 +111,18 @@ function Sidebar({ children }: { children: React.ReactNode }) {
       >
         <nav className="h-full overflow-y-auto p-4">
           <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Menu</div>
-          {main.map((it) => <Item key={it.href} {...it} />)}
-          <div className="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Cài đặt</div>
-          {settings.map((it) => <Item key={it.href} {...it} />)}
+          {main.map((it) => (
+            <Link key={it.href} href={it.href}>
+              <Button
+                variant={pathname === it.href ? 'secondary' : 'ghost'}
+                className={`my-1 w-full justify-start shadow-none ${pathname === it.href ? 'bg-gray-100' : ''}`}
+                onClick={() => setOpen(false)}
+              >
+                <it.icon className="h-4 w-4" />
+                {it.label}
+              </Button>
+            </Link>
+          ))}
         </nav>
       </aside>
 
