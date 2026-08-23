@@ -4,7 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, Shield, Activity, Menu } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Globe,
+  Settings,
+  Shield,
+  Activity,
+  Menu
+} from 'lucide-react';
 
 export default function DashboardLayout({
   children
@@ -15,18 +22,39 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { href: '/dashboard', icon: Users, label: 'Team' },
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/dashboard/platforms', icon: Globe, label: 'Platforms' }
+  ];
+
+  const settingsItems = [
     { href: '/dashboard/general', icon: Settings, label: 'General' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' }
   ];
+
+  function renderNav(items: { href: string; icon: React.ElementType; label: string }[]) {
+    return items.map((item) => (
+      <Link key={item.href} href={item.href} passHref>
+        <Button
+          variant={pathname === item.href ? 'secondary' : 'ghost'}
+          className={`shadow-none my-1 w-full justify-start ${
+            pathname === item.href ? 'bg-gray-100' : ''
+          }`}
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <item.icon className="h-4 w-4" />
+          {item.label}
+        </Button>
+      </Link>
+    ));
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100dvh-68px)] max-w-7xl mx-auto w-full">
       {/* Mobile header */}
       <div className="lg:hidden flex items-center justify-between bg-white border-b border-gray-200 p-4">
         <div className="flex items-center">
-          <span className="font-medium">Settings</span>
+          <span className="font-medium">Price Manager</span>
         </div>
         <Button
           className="-mr-3"
@@ -48,20 +76,11 @@ export default function DashboardLayout({
           }`}
         >
           <nav className="h-full overflow-y-auto p-4">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} passHref>
-                <Button
-                  variant={pathname === item.href ? 'secondary' : 'ghost'}
-                  className={`shadow-none my-1 w-full justify-start ${
-                    pathname === item.href ? 'bg-gray-100' : ''
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
-              </Link>
-            ))}
+            {renderNav(navItems)}
+            <div className="mt-4 mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+              Cài đặt
+            </div>
+            {renderNav(settingsItems)}
           </nav>
         </aside>
 

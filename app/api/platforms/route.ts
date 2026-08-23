@@ -1,12 +1,23 @@
 import { db } from '@/lib/db/drizzle';
-import { platforms } from '@/lib/db/schema';
+import { platforms, campaigns } from '@/lib/db/schema';
 import { DISCOUNT_RULES, type DiscountRule } from '@/lib/pricing';
 import { errorResponse } from '@/lib/api/helpers';
 
-// GET /api/platforms — list platforms (SPEC §6).
+// GET /api/platforms — list platforms with their campaigns (docs/api.md).
 export async function GET() {
-  const rows = await db.select().from(platforms).orderBy(platforms.sortOrder, platforms.id);
-  return Response.json(rows);
+  const [rows, campaignRows] = await Promise.all([
+    db.select().from(platforms).orderBy(platforms.sortOrder, platforms.id),
+    db.select().from(campaigns),
+  ]);
+
+  const byPlatform = new Map<number, (typeof campaignRows)[number][]>();
+  for (const c of campaignRows) {
+    const list = byPlatform.get(c.platformId) ?? [];
+    list.push(c);
+    byPlatform.set(c.platformId, list);
+  }
+
+  return Response.json(rows.map((p) => ({ ...p, campaigns: byPlatform.get(p.id) ?? [] })));
 }
 
 // POST /api/platforms — create a platform. Defaults: commissionRate 15, discountRule 'sum'.
