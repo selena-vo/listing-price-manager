@@ -62,7 +62,7 @@ Why this shape: one Next.js app (pages + API in one deploy target), shared types
 
 ### Week 1 — Foundation & Spec · Aug 24 – Aug 30
 **Goal:** approved spec + running app + design system.
-**Status (Aug 23):** ✅ **hoàn thành sớm** — SPEC v1.0 · repo (SaaS Starter) · Postgres colima + migrations + seed · API đầy đủ (dashboard/platforms/campaigns/listings/prices/health) · UI S1–S4 · CI (typecheck + vitest) · build production OK. **Còn lại: Gate 1 demo + sign-off của PO.**
+**Status (Aug 23):** ✅ **hoàn thành sớm** — SPEC v1.0 · repo (SaaS Starter) · Postgres colima + migrations + seed · API đầy đủ (dashboard/platforms/campaigns/listings/prices/health) · UI S1–S4 · CI (typecheck + vitest) · build production OK. **Gate 1 demo ✅ PO sign-off** · repo đã push lên GitHub (CI chạy).
 
 | Day | Work | Status |
 |---|---|---|
@@ -72,9 +72,9 @@ Why this shape: one Next.js app (pages + API in one deploy target), shared types
 | Thu 27 | UI/UX foundation (Tailwind + shadcn/ui) | ✅ |
 | Fri 28 | **S4 Platforms** wired to API | ✅ |
 | Sat 29 | Buffer | — |
-| Sun 30 | **Gate 1 demo:** app chạy local với data seed | ⏳ chờ PO |
+| Sun 30 | **Gate 1 demo:** app chạy local với data seed | ✅ PO sign-off (Aug 23) |
 
-**Your inputs this week:** ~~Postgres~~ ✅ colima · ~~auth~~ ✅ giữ · ~~Stripe~~ ✅ giữ · **Gate 1 demo sign-off** · (tùy chọn) GitHub URL để push + CI chạy.
+**Your inputs this week:** ~~Postgres~~ ✅ colima · ~~auth~~ ✅ giữ · ~~Stripe~~ ✅ giữ · **Gate 1 demo ✅ sign-off** · **GitHub URL ✅** (pushed → CI chạy trên push).
 
 ### Week 2 — First vertical slice · Aug 31 – Sep 6
 **Goal:** the **#1 priority feature** from your spec working end to end.
