@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
-import { platforms, listings, campaigns } from '@/lib/db/schema';
+import { platforms, listings, listingPlatforms, campaigns } from '@/lib/db/schema';
 import { CAMPAIGN_TYPES, type CampaignType } from '@/lib/pricing';
 import { errorResponse, parseId } from '@/lib/api/helpers';
 
@@ -19,6 +19,16 @@ export async function POST(req: Request, ctx: Ctx) {
   const [platform] = await db.select({ id: platforms.id }).from(platforms).where(eq(platforms.id, platformId)).limit(1);
   if (!listing) return errorResponse(404, 'NOT_FOUND', 'listing not found');
   if (!platform) return errorResponse(404, 'NOT_FOUND', 'platform not found');
+
+  // Edge case: a promotion only makes sense for a platform the listing actually uses.
+  const [used] = await db
+    .select({ id: listingPlatforms.id })
+    .from(listingPlatforms)
+    .where(and(eq(listingPlatforms.listingId, listingId), eq(listingPlatforms.platformId, platformId)))
+    .limit(1);
+  if (!used) {
+    return errorResponse(400, 'VALIDATION_ERROR', 'listing does not use this platform — assign the platform first');
+  }
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body.name !== 'string' || body.name.trim() === '') {

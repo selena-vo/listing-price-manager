@@ -51,7 +51,8 @@ pnpm dev                    # http://localhost:3000
 ```bash
 pnpm dev             # Next.js dev server (turbopack)
 pnpm typecheck       # tsc --noEmit
-pnpm test            # vitest (rule engine)
+pnpm test            # vitest (rule engine unit + edge cases)
+pnpm test:e2e        # API e2e smoke — cần `pnpm dev` đang chạy
 pnpm build           # production build
 pnpm db:generate     # generate migration from schema
 pnpm db:migrate      # apply migrations
