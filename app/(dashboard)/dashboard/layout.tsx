@@ -54,35 +54,6 @@ function ListingBar() {
   );
 }
 
-// Mockup tabs (Bảng giá theo ngày / Khuyến mãi / Nền tảng).
-function TabBar() {
-  const pathname = usePathname();
-  const tabs = [
-    { href: '/dashboard', icon: CalendarDays, label: 'Bảng giá theo ngày' },
-    { href: '/dashboard/promotions', icon: Tag, label: 'Khuyến mãi' },
-    { href: '/dashboard/platforms', icon: Globe, label: 'Nền tảng' }
-  ];
-  return (
-    <div className="border-b border-gray-200 bg-white px-4 lg:px-6">
-      <nav className="flex items-center gap-1 overflow-x-auto">
-        {tabs.map((t) => {
-          const active = pathname === t.href;
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`flex items-center gap-2 border-b-2 px-3 py-3 text-sm ${active ? 'border-teal-600 font-medium text-teal-700' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
-            >
-              <t.icon className="h-4 w-4" />
-              {t.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
-  );
-}
-
 // Starter-style sidebar menu (Menu only — Settings now live in the avatar dropdown).
 function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -136,7 +107,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <ListingProvider>
       <div className="flex min-h-[calc(100dvh-68px)] max-w-7xl flex-col mx-auto w-full">
         <ListingBar />
-        <TabBar />
         <Sidebar>{children}</Sidebar>
       </div>
     </ListingProvider>
