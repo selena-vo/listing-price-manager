@@ -1,5 +1,5 @@
-import PriceBoard from '@/components/dashboard';
+import DayBoard from '@/components/dashboard';
 
 export default function DashboardPage() {
-  return <PriceBoard />;
+  return <DayBoard />;
 }

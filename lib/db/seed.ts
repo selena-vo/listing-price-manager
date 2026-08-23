@@ -91,7 +91,7 @@ async function seedPlatformsAndDemoData() {
     platformRows.map((p) => ({
       listingId: demo.id,
       platformId: p.id,
-      pricePerNight: 1200000,
+      pricePerNight: 500000,
       currency: 'VND',
       note: null,
     })),
@@ -106,8 +106,8 @@ async function seedPlatformsAndDemoData() {
       active: true,
       priorityOrder: 1,
       type: 'new_listing',
-      startsAt: null,
-      endsAt: null,
+      startsAt: new Date('2026-08-05'),
+      endsAt: new Date('2026-08-09'),
     });
   }
 

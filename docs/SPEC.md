@@ -1,7 +1,7 @@
 # SPEC — Short-term Rental Price Manager (working title)
 
 > **Owner:** PO (you) · **Developer:** me
-> **Status:** **v1.1 — MVP baseline + dashboard redesign (day price board) per PO mockup (Aug 23).** Q1–Q10 confirmed by PO; **Q11–Q15 added (Aug 23, pending PO confirm).** The developer codes **only** from this document.
+> **Status:** **v1.1 — MVP baseline + dashboard redesign (day price board) per PO mockup (Aug 23). All Q1–Q15 confirmed by PO.** The developer codes **only** from this document.
 
 ---
 
@@ -34,8 +34,7 @@ Priority: **[M]** = must-have (this month) · **[N]** = nice-to-have (backlog).
 - [M] As a listing owner, I want a **month-by-day price board** for the selected listing: rows = days, columns = platform × {Giá cài đặt, Ròng (sau phí)}, with promo days highlighted and today marked — so that I can review daily earnings at a glance.
 - [M] I want to **navigate months** (← previous / next →, "Về hôm nay") and **pick which listing** the board shows.
 - [M] As a listing manager, I want to **see when a platform has no base price set** (empty state), so that I know what needs filling in.
-- [N] As a listing owner, I want to **export/import the data as JSON**, so that I can back up or transfer it.
-- [N] As a listing owner, I want a **currency selector** (VND-first), so that I can switch display currency.
+- [N] As a listing owner, I want a **currency selector** (VND-first; multi-currency in a future phase), so that I can switch display currency later.
 - [N] As a listing owner, I want to **override the price of one specific day**, so that I can set a bespoke daily rate.
 - [N] As a listing owner, I want a **history of price changes**, so that I can review how prices evolved.
 - [N] As a listing owner, I want **custom/free-form formulas** as a rule option, so that unusual platform rules can be represented exactly.
@@ -45,7 +44,7 @@ Priority: **[M]** = must-have (this month) · **[N]** = nice-to-have (backlog).
 Top-level **tabs** (per PO mockup): **Bảng giá theo ngày** (S1) · **Khuyến mãi** (S5) · **Nền tảng** (S4).
 
 - **S1 — Bảng giá theo ngày (day price board):**
-  - Toolbar: **listing selector** (which listing), **currency unit** selector (VND), **month navigation** (← Tháng trước · "Tháng 8 năm 2026" · Tháng sau → · **Về hôm nay**), and **Xuất JSON / Nhập JSON**.
+  - Toolbar: **listing selector** (which listing), **currency unit** (VND only for MVP — multi-currency in a future phase; Q13), **month navigation** (← Tháng trước · "Tháng 8 năm 2026" · Tháng sau → · **Về hôm nay**). *(Xuất/Nhập JSON not in MVP — Q14.)*
   - Table: rows = **days of the selected month** (with weekday label, e.g. "01/08 (Thứ 7)"); the **today** row is highlighted. Columns = each platform → two sub-columns: **Giá cài đặt** and **Ròng (sau phí)**.
   - Each **Giá cài đặt** cell: the effective price that day (base price, or base × (1 − discount) when a campaign covers that date) + a small **"phí X% · Y₫"** line. On promo days a **"Khuyến mãi …"** indicator is shown.
   - Each **Ròng (sau phí)** cell (green): set price − fee.
@@ -124,6 +123,8 @@ For a **base price P** on a platform, and a given **date D**, let **D** = the pl
 - Fixed per-booking fees (percentage commission only — Q6)
 - **Per-day price override** on the board (base price + date-ranged campaigns for MVP — Q12)
 - Hardcoding platform discount rules (seeded reference data, changeable in S4)
+- **Export/Import JSON** (Q14 — not in MVP, backlog)
+- **Multi-currency display beyond VND** (Q13 — future phase)
 - `custom` / free-form formula rule and per-platform sum cap — backlog
 - Authentication & authorization (single workspace MVP — Q2); login/roles later
 - Price history & charts (backlog)
@@ -152,11 +153,11 @@ For a **base price P** on a platform, and a given **date D**, let **D** = the pl
 
 | # | Question | Recommended answer | ✔ |
 |---|----------|--------------------|---|
-| 11 | Is the day board for **one listing** (with a listing selector) or **all listings at once**? | **One listing + selector** (matches the mockup; all-listings grid → backlog) | |
-| 12 | Is "Giá cài đặt" a **base price** (days derived from date-ranged campaigns) or **independently editable per day**? | **Base price + date-ranged campaigns**; per-day override → backlog | |
-| 13 | Currency selector — **VND only** (display format) or real multi-currency conversion? | **VND only** for MVP (selector present, VND-first) | |
-| 14 | **Export/Import JSON** in MVP? | **Yes** — simple JSON backup/restore (S1 toolbar) | |
-| 15 | Use the mockup's sample commissions as **preset defaults** (Airbnb 3%, Booking 15%, Trip 10%)? | **Yes — update presets** (still editable in S4) | |
+| 11 | Is the day board for **one listing** (with a listing selector) or **all listings at once**? | **One listing + selector** (matches the mockup; all-listings grid → backlog) | ✔ |
+| 12 | Is "Giá cài đặt" a **base price** (days derived from date-ranged campaigns) or **independently editable per day**? | **Base price + date-ranged campaigns**; per-day override → backlog | ✔ |
+| 13 | Currency selector — **VND only** (display format) or real multi-currency conversion? | **VND only for MVP; multi-currency update in a future phase** | ✔ |
+| 14 | **Export/Import JSON** in MVP? | **No — not in MVP** (backlog) | ✔ |
+| 15 | Use the mockup's sample commissions as **preset defaults** (Airbnb 3%, Booking 15%, Trip 10%)? | **Yes — presets updated** (still editable in S4) | ✔ |
 
 ## 10. Changelog
 
@@ -165,4 +166,5 @@ For a **base price P** on a platform, and a given **date D**, let **D** = the pl
 | Aug 23, 2026 | Initial English draft + commission/campaigns + discount-rule mechanism + real platform rules (see earlier rows) | Dev |
 | Aug 23, 2026 | **PO confirmed Q1–Q10** → spec v1.0 baseline | PO |
 | Aug 23, 2026 | **Stack re-initialized on Next.js SaaS Starter** (Postgres, auth & Stripe from starter, rule engine + schema added) | Dev |
-| Aug 23, 2026 | **Dashboard redesigned per PO mockup (spec v1.1):** S1 becomes a **month-by-day price board** (Giá cài đặt + Ròng sau phí per platform, promo-day highlight, today marked, month nav, listing selector, currency selector, Xuất/Nhập JSON); added **S5 Khuyến mãi** tab; S4 Platforms no longer holds campaigns; base-price + per-day derivation model; Q11–Q15 added | Dev |
+| Aug 23, 2026 | **Dashboard redesigned per PO mockup (spec v1.1):** S1 becomes a **month-by-day price board** (Giá cài đặt + Ròng sau phí per platform, promo-day highlight, today marked, month nav, listing selector, currency selector); added **S5 Khuyến mãi** tab; S4 Platforms no longer holds campaigns; base-price + per-day derivation model; Q11–Q15 added | Dev |
+| Aug 23, 2026 | **PO confirmed Q11–Q15**: one listing + selector · base-price + date-ranged campaigns · VND only (multi-currency future) · **no Export/Import JSON in MVP (backlog)** · presets = mockup commissions (3/15/10) | PO |
