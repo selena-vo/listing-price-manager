@@ -146,7 +146,18 @@ export async function handleSubscriptionChange(
   }
 }
 
+// MVP keeps Stripe unused (SPEC §8) — without a real key, return empty so the
+// starter's /pricing page renders gracefully instead of 401ing.
+function stripeConfigured() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  return Boolean(key && !key.startsWith('sk_test_placeholder'));
+}
+
 export async function getStripePrices() {
+  if (!stripeConfigured()) {
+    return [];
+  }
+
   const prices = await stripe.prices.list({
     expand: ['data.product'],
     active: true,
@@ -165,6 +176,10 @@ export async function getStripePrices() {
 }
 
 export async function getStripeProducts() {
+  if (!stripeConfigured()) {
+    return [];
+  }
+
   const products = await stripe.products.list({
     active: true,
     expand: ['data.default_price']

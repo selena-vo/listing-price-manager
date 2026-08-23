@@ -62,20 +62,19 @@ Why this shape: one Next.js app (pages + API in one deploy target), shared types
 
 ### Week 1 — Foundation & Spec · Aug 24 – Aug 30
 **Goal:** approved spec + running app + design system.
+**Status (Aug 23):** ✅ **hoàn thành sớm** — SPEC v1.0 · repo (SaaS Starter) · Postgres colima + migrations + seed · API đầy đủ (dashboard/platforms/campaigns/listings/prices/health) · UI S1–S4 · CI (typecheck + vitest) · build production OK. **Còn lại: Gate 1 demo + sign-off của PO.**
 
-Status at start of week: **SPEC v1.0 approved (Aug 23)** · repo initialized on the SaaS Starter · rule engine + presets + DB schema added.
+| Day | Work | Status |
+|---|---|---|
+| Mon 24 | Repo wired: pnpm install, migrations, `.env`; local Postgres (colima + container); CI: typecheck + vitest on push | ✅ |
+| Tue 25 | Seed: default platforms (presets) + demo listing; `GET /api/dashboard` | ✅ |
+| Wed 26 | **Spec review #1** | ✅ v1.0 (duyệt Aug 23) |
+| Thu 27 | UI/UX foundation (Tailwind + shadcn/ui) | ✅ |
+| Fri 28 | **S4 Platforms** wired to API | ✅ |
+| Sat 29 | Buffer | — |
+| Sun 30 | **Gate 1 demo:** app chạy local với data seed | ⏳ chờ PO |
 
-| Day | Work |
-|---|---|
-| Mon 24 | Repo wired: pnpm install, migrations generated, `.env` documented; local Postgres set up (Docker/Neon URL — needs PO's Neon account or local DB); CI: typecheck + vitest on push |
-| Tue 25 | Seed data: default platforms from presets (Airbnb/Booking/Trip) + sample listing; `GET /api/dashboard` route handler |
-| Wed 26 | **Spec review #1** with you (spec is v1.0; confirm the starter's login: keep auth-gated dashboard vs open MVP — see §9 Q2) |
-| Thu 27 | Build the **UI/UX foundation** on Tailwind + shadcn/ui: tokens, layout shell, component inventory (button, card, input, dialog, table) |
-| Fri 28 | First real screen: **S4 Platforms** (commission + discount rule + campaigns) — wire to API |
-| Sat 29 | Buffer: absorb feedback |
-| Sun 30 | **Gate 1 demo:** app runs locally with seeded data; platforms screen working |
-
-**Your inputs this week:** Postgres choice (Neon free URL or local), auth keep/strip decision, feature priority ranking.
+**Your inputs this week:** ~~Postgres~~ ✅ colima · ~~auth~~ ✅ giữ · ~~Stripe~~ ✅ giữ · **Gate 1 demo sign-off** · (tùy chọn) GitHub URL để push + CI chạy.
 
 ### Week 2 — First vertical slice · Aug 31 – Sep 6
 **Goal:** the **#1 priority feature** from your spec working end to end.
@@ -151,7 +150,7 @@ A feature is done only when **all** of these are true:
 
 ## 9. What I need from you (PO) — summary
 
-- **Week 1:** Postgres decision (Neon free URL or local DB), auth keep/strip decision (starter ships login — spec Q2 says no login for MVP), feature priority ranking.
+- **Week 1:** ✅ đã chốt (Postgres = colima, auth giữ, Stripe giữ) — **còn: Gate 1 demo sign-off** + (tùy chọn) GitHub URL để push/CI.
 - **Week 2:** #1 feature confirmed + any slice questions answered.
 - **Week 3:** priority order + mid-week adjustments + acceptance criteria per feature.
 - **Week 4:** final walkthrough of the live URL + sign-off.
