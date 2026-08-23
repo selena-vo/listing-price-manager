@@ -3,19 +3,17 @@
 import { Fragment, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useListing } from '@/components/listing-context';
-import Modal from '@/components/modal';
 import ListingModal from '@/components/listing-modal';
 import { computePrice } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
 import { formatVND } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-type DPlatform = Platform;type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
+type DPlatform = Platform;
+type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
 interface DashboardData {
   platforms: DPlatform[];
   listings: DListing[];
@@ -46,101 +44,45 @@ function activeOnDate(campaigns: Campaign[], date: Date): Campaign[] {
   });
 }
 
-// (Modal & ListingModal are now shared: components/modal.tsx & components/listing-modal.tsx)
-
-// --- S2 — set BASE price per (listing, platform) ---
-function BasePriceModal({
-  listing,
-  platform,
-  current,
-  onClose,
-}: {
-  listing: DListing;
-  platform: DPlatform;
-  current: ListingPrice | null;
-  onClose: () => void;
-}) {
-  const [price, setPrice] = useState(current ? String(current.pricePerNight) : '');
-  const [note, setNote] = useState(current?.note ?? '');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// --- Base price (giá cài đặt) input per listing × platform — inline, saves on blur ---
+function BasePriceInput({ listing, platform }: { listing: DListing; platform: DPlatform }) {
   const { mutate } = useSWRConfig();
-
-  const parsed = Number(price);
-  const valid = Number.isInteger(parsed) && parsed > 0;
-  const preview = valid
-    ? computePrice({
-        listedPrice: parsed,
-        commissionRate: platform.commissionRate,
-        rule: platform.discountRule,
-        campaigns: [],
-      })
-    : null;
+  const current = listing.prices.find((x) => x.platformId === platform.id) ?? null;
+  const [value, setValue] = useState(current ? String(current.pricePerNight) : '');
+  const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!valid) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/listings/${listing.id}/platforms/${platform.id}/price`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pricePerNight: parsed, note: note.trim() || null }),
-      });
-      if (!res.ok) throw new Error('save failed');
-      await mutate('/api/dashboard');
-      onClose();
-    } catch {
-      setError('Không lưu được. Vui lòng thử lại.');
-      setSaving(false);
+    const n = Number(value);
+    if (!Number.isInteger(n) || n <= 0) {
+      setValue(current ? String(current.pricePerNight) : '');
+      return;
     }
+    setSaving(true);
+    await fetch(`/api/listings/${listing.id}/platforms/${platform.id}/price`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pricePerNight: n }),
+    });
+    setSaving(false);
+    await mutate('/api/dashboard');
   }
 
   return (
-    <Modal title={`Giá cơ bản — ${platform.name} · ${listing.name}`} onClose={onClose}>
-      <div className="space-y-4">
-        <p className="text-xs text-gray-500">
-          Đây là <strong>giá cơ bản</strong> áp dụng cho mọi ngày; ngày có khuyến mãi sẽ được điều chỉnh theo campaign (S5).
-        </p>
-        <div>
-          <Label htmlFor="price">Giá mỗi đêm (₫)</Label>
-          <Input
-            id="price"
-            type="number"
-            min={1}
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Ví dụ: 500000"
-            className="mt-1 text-lg"
-            autoFocus
-          />
-          {price !== '' && !valid && <p className="mt-1 text-xs text-red-600">Nhập số nguyên lớn hơn 0</p>}
-        </div>
-        <div>
-          <Label htmlFor="note">Ghi chú (tùy chọn)</Label>
-          <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} className="mt-1" />
-        </div>
-        {preview && (
-          <div className="rounded-xl bg-teal-50 p-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Phí ({platform.commissionRate}%)</span>
-              <span className="font-medium">{formatVND(preview.commission)}</span>
-            </div>
-            <div className="mt-1 flex justify-between">
-              <span className="text-gray-600">Ròng (sau phí)</span>
-              <span className="font-medium text-green-700">{formatVND(preview.net)}</span>
-            </div>
-          </div>
-        )}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>Hủy</Button>
-          <Button onClick={save} disabled={!valid || saving}>
-            {saving ? 'Đang lưu…' : 'Lưu'}
-          </Button>
-        </div>
-      </div>
-    </Modal>
+    <div className="mt-1 flex items-center justify-center gap-1">
+      <span className="text-[10px] text-gray-400">Giá cài đặt</span>
+      <input
+        type="number"
+        min={1}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        placeholder="0"
+        disabled={saving}
+        aria-label={`Giá cài đặt cho ${platform.name}`}
+        className="w-24 rounded-md border border-gray-300 px-1.5 py-0.5 text-right text-xs"
+      />
+      <span className="text-[10px] text-gray-400">₫</span>
+    </div>
   );
 }
 
@@ -150,7 +92,6 @@ export default function DayBoard() {
   const today = useMemo(() => new Date(), []);
   const { listingId } = useListing();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
-  const [baseTarget, setBaseTarget] = useState<{ listing: DListing; platform: DPlatform; current: ListingPrice | null } | null>(null);
 
   const platforms = data?.platforms ?? [];
   const listings = data?.listings ?? [];
@@ -185,8 +126,8 @@ export default function DayBoard() {
       <section className="p-4 lg:p-6">
         <h1 className="mb-2 text-2xl font-semibold">Bảng giá theo ngày</h1>
         <p className="mb-4 text-gray-500">
-          Listing <span className="font-medium">{selectedListing?.name ?? '—'}</span> chưa gắn nền tảng nào. Mở
-          sửa listing (biểu tượng ✎/khu vực listing) để chọn nền tảng.
+          Listing <span className="font-medium">{selectedListing?.name ?? '—'}</span> chưa gắn nền tảng nào. Sửa
+          listing (nút “Listing” trên thanh trên, hoặc chọn nền tảng ở tab Nền tảng) để gắn nền tảng.
         </p>
         <Button asChild><a href="/dashboard/platforms">Đi tới Nền tảng</a></Button>
       </section>
@@ -226,18 +167,11 @@ export default function DayBoard() {
                   <div className="flex items-center justify-center gap-1.5">
                     <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: p.color ?? '#94a3b8' }} />
                     {p.name}
-                    <button
-                      type="button"
-                      aria-label={`Đặt giá cơ bản cho ${p.name}`}
-                      onClick={() => selectedListing && setBaseTarget({ listing: selectedListing, platform: p, current: selectedListing.prices.find((x) => x.platformId === p.id) ?? null })}
-                      className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
                   </div>
                   <div className="text-[11px] font-normal text-gray-400">
                     Hoa hồng {p.commissionRate}%
                   </div>
+                  {selectedListing && <BasePriceInput key={selectedListing.id} listing={selectedListing} platform={p} />}
                 </th>
               ))}
             </tr>
@@ -272,33 +206,26 @@ export default function DayBoard() {
                       : null;
                     return (
                       <Fragment key={p.id}>
-                        <td className="border-l border-gray-200 p-1 text-center align-middle">
-                          <button
-                            type="button"
-                            onClick={() => selectedListing && setBaseTarget({ listing: selectedListing, platform: p, current: price })}
-                            title="Sửa giá cài đặt (giá cơ bản — áp dụng cho mọi ngày)"
-                            className="w-full rounded-lg p-1 hover:bg-teal-50"
-                          >
-                            {breakdown ? (
-                              <div className={promo.length > 0 ? 'rounded-xl bg-blue-50 py-1' : ''}>
-                                {promo.length > 0 && (
-                                  <div className="mb-0.5 text-[10px] font-medium text-blue-600">Khuyến mãi</div>
-                                )}
-                                {/* Giá cài đặt (gốc); khi có khuyến mãi, gạch ngang + hiện giá khuyến mãi đã tính */}
-                                <div className={promo.length > 0 ? 'text-[11px] text-gray-400 line-through' : 'font-semibold text-gray-900'}>
-                                  {formatVND(price!.pricePerNight)}
-                                </div>
-                                {promo.length > 0 && (
-                                  <div className="font-semibold text-blue-700">{formatVND(breakdown.guestPrice)}</div>
-                                )}
-                                <div className="text-[10px] text-gray-400">
-                                  phí {p.commissionRate}% · {formatVND(breakdown.commission)}
-                                </div>
+                        <td className="border-l border-gray-200 p-2 text-center align-middle">
+                          {breakdown ? (
+                            <div className={promo.length > 0 ? 'rounded-xl bg-blue-50 py-1' : ''}>
+                              {promo.length > 0 && (
+                                <div className="mb-0.5 text-[10px] font-medium text-blue-600">Khuyến mãi</div>
+                              )}
+                              {/* Giá cài đặt (gốc); khi có khuyến mãi, gạch ngang + hiện giá khuyến mãi đã tính */}
+                              <div className={promo.length > 0 ? 'text-[11px] text-gray-400 line-through' : 'font-semibold text-gray-900'}>
+                                {formatVND(price!.pricePerNight)}
                               </div>
-                            ) : (
-                              <span className="text-gray-300">—</span>
-                            )}
-                          </button>
+                              {promo.length > 0 && (
+                                <div className="font-semibold text-blue-700">{formatVND(breakdown.guestPrice)}</div>
+                              )}
+                              <div className="text-[10px] text-gray-400">
+                                phí {p.commissionRate}% · {formatVND(breakdown.commission)}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
                         </td>
                         <td className="border-r border-gray-200 p-2 text-center align-middle">
                           {breakdown ? (
@@ -319,17 +246,10 @@ export default function DayBoard() {
 
       {/* Footer legend note */}
       <p className="mt-3 text-xs text-gray-400">
-        Cột là {boardPlatforms.map((p) => p.name).join(' · ')}. Ngày nền xanh có khuyến mãi (giá gạch ngang = giá cài đặt, giá xanh = giá khuyến mãi đã tính). <strong>Click vào ô “Giá cài đặt”</strong> để đặt giá cơ bản cho listing trên nền tảng đó.
+        Cột là {boardPlatforms.map((p) => p.name).join(' · ')}. Ngày nền xanh có khuyến mãi (giá gạch ngang = giá cài đặt,
+        giá xanh = giá khuyến mãi đã tính). <strong>Nhập số vào ô “Giá cài đặt” dưới tên mỗi nền tảng</strong> để đặt giá
+        cơ bản cho listing này.
       </p>
-
-      {baseTarget && (
-        <BasePriceModal
-          listing={baseTarget.listing}
-          platform={baseTarget.platform}
-          current={baseTarget.current}
-          onClose={() => setBaseTarget(null)}
-        />
-      )}
     </section>
   );
 }
