@@ -3,56 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
-import { ListingProvider, useListing } from '@/components/listing-context';
-import ListingModal from '@/components/listing-modal';
-import { CalendarDays, Tag, Globe, Menu, Plus } from 'lucide-react';
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-interface ListingRef {
-  id: number;
-  name: string;
-}
-
-// Global listing selector + "+ Listing" (shared across the 3 tabs).
-function ListingBar() {
-  const { listingId, setListingId } = useListing();
-  const { data } = useSWR<{ listings: ListingRef[] }>('/api/dashboard', fetcher);
-  const listings = data?.listings ?? [];
-  const selectedId = listingId ?? listings[0]?.id ?? null;
-  const [showAdd, setShowAdd] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm font-medium">Quản lý giá theo nền tảng & khuyến mãi</span>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-gray-500">Đơn vị tiền: VND</span>
-          <label className="flex items-center gap-2 text-gray-600">
-            Listing
-            <select
-              value={selectedId ?? ''}
-              onChange={(e) => setListingId(Number(e.target.value))}
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm"
-              aria-label="Chọn listing"
-            >
-              {listings.length === 0 && <option value="">Chưa có listing</option>}
-              {listings.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
-              ))}
-            </select>
-          </label>
-          <Button size="sm" onClick={() => setShowAdd(true)}>
-            <Plus className="mr-1 h-4 w-4" /> Listing
-          </Button>
-        </div>
-      </div>
-      {showAdd && <ListingModal onClose={() => setShowAdd(false)} />}
-    </div>
-  );
-}
+import { ListingProvider } from '@/components/listing-context';
+import { CalendarDays, Tag, Globe, Menu } from 'lucide-react';
 
 // Starter-style sidebar menu (Menu only — Settings now live in the avatar dropdown).
 function Sidebar({ children }: { children: React.ReactNode }) {
@@ -114,7 +67,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ListingProvider>
       <div className="flex min-h-[calc(100dvh-68px)] max-w-7xl flex-col mx-auto w-full">
-        <ListingBar />
         <Sidebar>{children}</Sidebar>
       </div>
     </ListingProvider>

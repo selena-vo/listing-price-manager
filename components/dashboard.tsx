@@ -8,7 +8,7 @@ import { computePrice } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
 import { formatVND } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -90,8 +90,9 @@ function BasePriceInput({ listing, platform }: { listing: DListing; platform: DP
 export default function DayBoard() {
   const { data, error, isLoading } = useSWR<DashboardData>('/api/dashboard', fetcher);
   const today = useMemo(() => new Date(), []);
-  const { listingId } = useListing();
+  const { listingId, setListingId } = useListing();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [showAdd, setShowAdd] = useState(false);
 
   const platforms = data?.platforms ?? [];
   const listings = data?.listings ?? [];
@@ -138,8 +139,25 @@ export default function DayBoard() {
     <section className="p-4 lg:p-6">
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-gray-600">
-          Listing: <span className="font-medium">{selectedListing?.name ?? '—'}</span>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <label className="flex items-center gap-2 text-gray-600">
+            Listing
+            <select
+              value={selectedListing?.id ?? ''}
+              onChange={(e) => setListingId(Number(e.target.value))}
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+              aria-label="Chọn listing"
+            >
+              {listings.length === 0 && <option value="">Chưa có listing</option>}
+              {listings.map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </select>
+          </label>
+          <Button size="sm" onClick={() => setShowAdd(true)}>
+            <Plus className="mr-1 h-4 w-4" /> Thêm listing
+          </Button>
+          <span className="text-gray-500">Đơn vị tiền: VND</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => go(-1)} aria-label="Tháng trước">
@@ -250,6 +268,8 @@ export default function DayBoard() {
         giá xanh = giá khuyến mãi đã tính). <strong>Nhập số vào ô “Giá cài đặt” dưới tên mỗi nền tảng</strong> để đặt giá
         cơ bản cho listing này.
       </p>
+
+      {showAdd && <ListingModal onClose={() => setShowAdd(false)} />}
     </section>
   );
 }
