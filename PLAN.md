@@ -43,7 +43,7 @@ web-service/
 ├── app/              # Next.js App Router: marketing, (dashboard), (login), api/ route handlers
 ├── components/ui/    # shadcn/ui primitives (button, card, input, …)
 ├── lib/
-│   ├── db/           # Drizzle schema (users/teams + platforms/homestays/listing_prices/campaigns) + migrations
+│   ├── db/           # Drizzle schema (users/teams + platforms/listings/listing_prices/campaigns) + migrations
 │   ├── pricing/      # ★ domain core: discount rule engine (sum/best/priority/sequential) + presets + types (Vitest)
 │   ├── auth/         # JWT session (from starter)
 │   └── payments/     # Stripe (from starter — unused by MVP, SPEC §8)
@@ -68,7 +68,7 @@ Status at start of week: **SPEC v1.0 approved (Aug 23)** · repo initialized on 
 | Day | Work |
 |---|---|
 | Mon 24 | Repo wired: pnpm install, migrations generated, `.env` documented; local Postgres set up (Docker/Neon URL — needs PO's Neon account or local DB); CI: typecheck + vitest on push |
-| Tue 25 | Seed data: default platforms from presets (Airbnb/Booking/Trip) + sample homestay; `GET /api/dashboard` route handler |
+| Tue 25 | Seed data: default platforms from presets (Airbnb/Booking/Trip) + sample listing; `GET /api/dashboard` route handler |
 | Wed 26 | **Spec review #1** with you (spec is v1.0; confirm the starter's login: keep auth-gated dashboard vs open MVP — see §9 Q2) |
 | Thu 27 | Build the **UI/UX foundation** on Tailwind + shadcn/ui: tokens, layout shell, component inventory (button, card, input, dialog, table) |
 | Fri 28 | First real screen: **S4 Platforms** (commission + discount rule + campaigns) — wire to API |

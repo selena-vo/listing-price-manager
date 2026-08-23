@@ -7,7 +7,7 @@ import { SWRConfig } from 'swr';
 export const metadata: Metadata = {
   title: 'Price Manager',
   description:
-    'Track your homestay prices across Airbnb, Booking.com, Trip.com — with commissions (hoa hồng) and discount campaigns, and see the net you receive.'
+    'Track your listing prices across Airbnb, Booking.com, Trip.com — with commissions (hoa hồng) and discount campaigns, and see the net you receive.'
 };
 
 export const viewport: Viewport = {

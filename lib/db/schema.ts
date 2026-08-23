@@ -155,7 +155,7 @@ export const platforms = pgTable('platforms', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const homestays = pgTable('homestays', {
+export const listings = pgTable('listings', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   location: varchar('location', { length: 255 }),
@@ -167,9 +167,9 @@ export const listingPrices = pgTable(
   'listing_prices',
   {
     id: serial('id').primaryKey(),
-    homestayId: integer('homestay_id')
+    listingId: integer('listing_id')
       .notNull()
-      .references(() => homestays.id, { onDelete: 'cascade' }),
+      .references(() => listings.id, { onDelete: 'cascade' }),
     platformId: integer('platform_id')
       .notNull()
       .references(() => platforms.id, { onDelete: 'cascade' }),
@@ -178,7 +178,7 @@ export const listingPrices = pgTable(
     note: text('note'),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (t) => [uniqueIndex('listing_prices_homestay_platform_unique').on(t.homestayId, t.platformId)],
+  (t) => [uniqueIndex('listing_prices_listing_platform_unique').on(t.listingId, t.platformId)],
 );
 
 export const campaigns = pgTable('campaigns', {
@@ -201,7 +201,7 @@ export const platformsRelations = relations(platforms, ({ many }) => ({
   listingPrices: many(listingPrices),
 }));
 
-export const homestaysRelations = relations(homestays, ({ many }) => ({
+export const listingsRelations = relations(listings, ({ many }) => ({
   listingPrices: many(listingPrices),
 }));
 
@@ -213,9 +213,9 @@ export const campaignsRelations = relations(campaigns, ({ one }) => ({
 }));
 
 export const listingPricesRelations = relations(listingPrices, ({ one }) => ({
-  homestay: one(homestays, {
-    fields: [listingPrices.homestayId],
-    references: [homestays.id],
+  listing: one(listings, {
+    fields: [listingPrices.listingId],
+    references: [listings.id],
   }),
   platform: one(platforms, {
     fields: [listingPrices.platformId],
@@ -225,8 +225,8 @@ export const listingPricesRelations = relations(listingPrices, ({ one }) => ({
 
 export type Platform = typeof platforms.$inferSelect;
 export type NewPlatform = typeof platforms.$inferInsert;
-export type Homestay = typeof homestays.$inferSelect;
-export type NewHomestay = typeof homestays.$inferInsert;
+export type Listing = typeof listings.$inferSelect;
+export type NewListing = typeof listings.$inferInsert;
 export type ListingPrice = typeof listingPrices.$inferSelect;
 export type NewListingPrice = typeof listingPrices.$inferInsert;
 export type Campaign = typeof campaigns.$inferSelect;

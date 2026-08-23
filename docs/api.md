@@ -43,7 +43,7 @@
       ]
     }
   ],
-  "homestays": [
+  "listings": [
     {
       "id": 1, "name": "Sea View Villa", "location": "Mũi Né", "notes": null,
       "createdAt": "2026-08-23T10:00:00.000Z",
@@ -80,21 +80,21 @@
 `type` (optional, metadata only — SPEC §5): `new_listing` | `custom` | `length_of_stay` | `early_bird` | `last_minute` | `other`.
 `priorityOrder`: integer ≥ 1, 1 = highest; used by `priority` / `sequential` rules.
 
-## Homestays
+## Listings
 
 | Method | Path | Body / notes | Response |
 |---|---|---|---|
-| GET | `/api/homestays` | optional `?include=prices` | `Homestay[]` |
-| POST | `/api/homestays` | `{ name, location?, notes? }` | `Homestay` (201) |
-| PATCH | `/api/homestays/:id` | any subset of the above | `Homestay` |
-| DELETE | `/api/homestays/:id` | cascade: removes its listing prices | 204 |
+| GET | `/api/listings` | optional `?include=prices` | `Listing[]` |
+| POST | `/api/listings` | `{ name, location?, notes? }` | `Listing` (201) |
+| PATCH | `/api/listings/:id` | any subset of the above | `Listing` |
+| DELETE | `/api/listings/:id` | cascade: removes its listing prices | 204 |
 
 ## Listing prices
 
 | Method | Path | Body / notes | Response |
 |---|---|---|---|
-| PUT | `/api/homestays/:homestayId/platforms/:platformId/price` | **Upsert** — `{ pricePerNight, note? }` (`pricePerNight` integer > 0; `currency` fixed `"VND"`) | `ListingPrice` (201 if created, 200 if updated) |
-| GET | `/api/homestays/:homestayId/platforms/:platformId/price` | — | `ListingPrice` (404 if not set) |
+| PUT | `/api/listings/:listingId/platforms/:platformId/price` | **Upsert** — `{ pricePerNight, note? }` (`pricePerNight` integer > 0; `currency` fixed `"VND"`) | `ListingPrice` (201 if created, 200 if updated) |
+| GET | `/api/listings/:listingId/platforms/:platformId/price` | — | `ListingPrice` (404 if not set) |
 
 ## Shared rule engine (used by web UI — SPEC §6)
 

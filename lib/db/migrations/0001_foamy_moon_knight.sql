@@ -11,22 +11,22 @@ CREATE TABLE "campaigns" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "homestays" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"name" varchar(255) NOT NULL,
-	"location" varchar(255),
-	"notes" text,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "listing_prices" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"homestay_id" integer NOT NULL,
+	"listing_id" integer NOT NULL,
 	"platform_id" integer NOT NULL,
 	"price_per_night" integer NOT NULL,
 	"currency" varchar(10) DEFAULT 'VND' NOT NULL,
 	"note" text,
 	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "listings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"location" varchar(255),
+	"notes" text,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "platforms" (
@@ -41,6 +41,6 @@ CREATE TABLE "platforms" (
 );
 --> statement-breakpoint
 ALTER TABLE "campaigns" ADD CONSTRAINT "campaigns_platform_id_platforms_id_fk" FOREIGN KEY ("platform_id") REFERENCES "public"."platforms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "listing_prices" ADD CONSTRAINT "listing_prices_homestay_id_homestays_id_fk" FOREIGN KEY ("homestay_id") REFERENCES "public"."homestays"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "listing_prices" ADD CONSTRAINT "listing_prices_listing_id_listings_id_fk" FOREIGN KEY ("listing_id") REFERENCES "public"."listings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "listing_prices" ADD CONSTRAINT "listing_prices_platform_id_platforms_id_fk" FOREIGN KEY ("platform_id") REFERENCES "public"."platforms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "listing_prices_homestay_platform_unique" ON "listing_prices" USING btree ("homestay_id","platform_id");
+CREATE UNIQUE INDEX "listing_prices_listing_platform_unique" ON "listing_prices" USING btree ("listing_id","platform_id");

@@ -3,15 +3,15 @@ import { db } from '@/lib/db/drizzle';
 import { listingPrices } from '@/lib/db/schema';
 import { errorResponse, parseId } from '@/lib/api/helpers';
 
-type Ctx = { params: Promise<{ homestayId: string; platformId: string }> };
+type Ctx = { params: Promise<{ listingId: string; platformId: string }> };
 
-// PUT /api/homestays/:homestayId/platforms/:platformId/price — upsert (SPEC §6, docs/api.md).
+// PUT /api/listings/:listingId/platforms/:platformId/price — upsert (SPEC §6, docs/api.md).
 export async function PUT(req: Request, ctx: Ctx) {
-  const { homestayId: rawH, platformId: rawP } = await ctx.params;
-  const homestayId = parseId(rawH);
+  const { listingId: rawH, platformId: rawP } = await ctx.params;
+  const listingId = parseId(rawH);
   const platformId = parseId(rawP);
-  if (!homestayId || !platformId) {
-    return errorResponse(400, 'VALIDATION_ERROR', 'invalid homestayId or platformId');
+  if (!listingId || !platformId) {
+    return errorResponse(400, 'VALIDATION_ERROR', 'invalid listingId or platformId');
   }
 
   const body = await req.json().catch(() => null);
@@ -24,7 +24,7 @@ export async function PUT(req: Request, ctx: Ctx) {
   const [existing] = await db
     .select({ id: listingPrices.id })
     .from(listingPrices)
-    .where(and(eq(listingPrices.homestayId, homestayId), eq(listingPrices.platformId, platformId)))
+    .where(and(eq(listingPrices.listingId, listingId), eq(listingPrices.platformId, platformId)))
     .limit(1);
 
   if (existing) {
@@ -39,7 +39,7 @@ export async function PUT(req: Request, ctx: Ctx) {
   const [row] = await db
     .insert(listingPrices)
     .values({
-      homestayId,
+      listingId,
       platformId,
       pricePerNight: body.pricePerNight,
       currency: 'VND',
@@ -49,19 +49,19 @@ export async function PUT(req: Request, ctx: Ctx) {
   return Response.json(row, { status: 201 });
 }
 
-// GET /api/homestays/:homestayId/platforms/:platformId/price
+// GET /api/listings/:listingId/platforms/:platformId/price
 export async function GET(_req: Request, ctx: Ctx) {
-  const { homestayId: rawH, platformId: rawP } = await ctx.params;
-  const homestayId = parseId(rawH);
+  const { listingId: rawH, platformId: rawP } = await ctx.params;
+  const listingId = parseId(rawH);
   const platformId = parseId(rawP);
-  if (!homestayId || !platformId) {
-    return errorResponse(400, 'VALIDATION_ERROR', 'invalid homestayId or platformId');
+  if (!listingId || !platformId) {
+    return errorResponse(400, 'VALIDATION_ERROR', 'invalid listingId or platformId');
   }
 
   const [row] = await db
     .select()
     .from(listingPrices)
-    .where(and(eq(listingPrices.homestayId, homestayId), eq(listingPrices.platformId, platformId)))
+    .where(and(eq(listingPrices.listingId, listingId), eq(listingPrices.platformId, platformId)))
     .limit(1);
 
   if (!row) return errorResponse(404, 'NOT_FOUND', 'price not set');

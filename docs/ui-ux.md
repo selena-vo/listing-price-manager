@@ -1,13 +1,13 @@
 # UI/UX Design — docs/ui-ux.md
 
-> Source of truth: SPEC.md §4 (screens S1–S4). Goals: **simple, obvious, calm** — built for non-technical homestay owners (persona Lin), mobile-first, desktop-friendly. No decoration for its own sake; every element earns its place.
+> Source of truth: SPEC.md §4 (screens S1–S4). Goals: **simple, obvious, calm** — built for non-technical listing owners (persona Lin), mobile-first, desktop-friendly. No decoration for its own sake; every element earns its place.
 
 ## 1. Design principles
 
 1. **One job per screen.** Dashboard = compare prices. Settings = configure platforms/rules. No mixing.
 2. **Numbers first.** Prices are the hero; everything else (badges, notes, dates) is secondary type.
 3. **Empty is an instruction.** Every empty state tells the user what to do next (a call-to-action).
-4. **Safe by default.** Destructive actions (delete platform/homestay) always confirm; edits save explicitly.
+4. **Safe by default.** Destructive actions (delete platform/listing) always confirm; edits save explicitly.
 
 ## 2. Design tokens
 
@@ -38,11 +38,11 @@
 
 - **Header bar** (always visible): app name **"Price Manager"** + nav: **Dashboard** · **Platforms** (right side: nothing else in MVP).
 - **Content**: max-width 1100px, centered, 24px padding.
-- Mobile: table collapses to **stacked cards** (one homestay = one card; each platform shown as a labeled row inside).
+- Mobile: table collapses to **stacked cards** (one listing = one card; each platform shown as a labeled row inside).
 
 ## 4. S1 — Dashboard (price board)
 
-- Table: `sticky` first column (homestay name) for horizontal scroll on small screens.
+- Table: `sticky` first column (listing name) for horizontal scroll on small screens.
 - **Column header**: `Airbnb` (medium) + `15%` (muted, small) + rule icon-letter hint (`P` = priority, `S` = sum, `B` = best, `Q` = sequential — with tooltip explaining in plain words).
 - **Cell** (clickable → S2): stacked lines, centered:
 
@@ -54,9 +54,9 @@ net ≈ 867.000₫      ← success 13px (computed)
 ```
 
 - **Missing price cell**: dashed border + `—` in muted, subtle warning tint; whole cell still clickable.
-- Row actions (hover reveals): edit homestay (pencil), delete (trash → confirm dialog).
-- **Empty states**: no homestays → centered illustration-less message + primary button **"Add your first homestay"** (→ S3). No platforms → CTA in S4.
-- Top-right of the board: **"Add homestay"** (primary) and **"Platforms"** link.
+- Row actions (hover reveals): edit listing (pencil), delete (trash → confirm dialog).
+- **Empty states**: no listings → centered illustration-less message + primary button **"Add your first listing"** (→ S3). No platforms → CTA in S4.
+- Top-right of the board: **"Add listing"** (primary) and **"Platforms"** link.
 
 ## 5. S2 — Set/Edit price (modal)
 
@@ -66,7 +66,7 @@ net ≈ 867.000₫      ← success 13px (computed)
 - Actions: **Save** (primary, disabled until valid) · **Cancel** (secondary).
 - After save: toast `Saved` (success, 2.5s) + cell shows `updated just now`.
 
-## 6. S3 — Add/Edit homestay (modal)
+## 6. S3 — Add/Edit listing (modal)
 
 - Fields: **Name** (required), **Location** (optional), **Notes** (optional).
 - Same button pattern as S2. After save: row appears (empty prices, all "—").

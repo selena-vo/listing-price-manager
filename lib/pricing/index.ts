@@ -32,7 +32,7 @@ export interface Platform {
   createdAt: string;
 }
 
-export interface Homestay {
+export interface Listing {
   id: number;
   name: string;
   location: string | null;
@@ -42,7 +42,7 @@ export interface Homestay {
 
 export interface ListingPrice {
   id: number;
-  homestayId: number;
+  listingId: number;
   platformId: number;
   pricePerNight: number; // VND, integer > 0 (SPEC §9 Q4)
   currency: string; // 'VND' for MVP

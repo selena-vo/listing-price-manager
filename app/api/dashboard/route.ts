@@ -1,12 +1,12 @@
 import { db } from '@/lib/db/drizzle';
-import { platforms, homestays, listingPrices, campaigns } from '@/lib/db/schema';
+import { platforms, listings, listingPrices, campaigns } from '@/lib/db/schema';
 
 // GET /api/dashboard — one call returns the whole board (docs/api.md).
 // Returns raw values only; guest price / net are computed client-side with lib/pricing/rule-engine.
 export async function GET() {
-  const [platformRows, homestayRows, priceRows, campaignRows] = await Promise.all([
+  const [platformRows, listingRows, priceRows, campaignRows] = await Promise.all([
     db.select().from(platforms).orderBy(platforms.sortOrder, platforms.id),
-    db.select().from(homestays).orderBy(homestays.id),
+    db.select().from(listings).orderBy(listings.id),
     db.select().from(listingPrices),
     db.select().from(campaigns),
   ]);
@@ -18,11 +18,11 @@ export async function GET() {
     campaignsByPlatform.set(c.platformId, list);
   }
 
-  const pricesByHomestay = new Map<number, (typeof priceRows)[number][]>();
+  const pricesByListing = new Map<number, (typeof priceRows)[number][]>();
   for (const p of priceRows) {
-    const list = pricesByHomestay.get(p.homestayId) ?? [];
+    const list = pricesByListing.get(p.listingId) ?? [];
     list.push(p);
-    pricesByHomestay.set(p.homestayId, list);
+    pricesByListing.set(p.listingId, list);
   }
 
   return Response.json({
@@ -30,9 +30,9 @@ export async function GET() {
       ...p,
       campaigns: campaignsByPlatform.get(p.id) ?? [],
     })),
-    homestays: homestayRows.map((h) => ({
+    listings: listingRows.map((h) => ({
       ...h,
-      prices: pricesByHomestay.get(h.id) ?? [],
+      prices: pricesByListing.get(h.id) ?? [],
     })),
   });
 }

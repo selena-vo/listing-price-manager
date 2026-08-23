@@ -1,5 +1,5 @@
 {
-  "id": "1e8602e8-06ad-40b0-a8ac-808364887be5",
+  "id": "db1dea92-d170-4979-ad68-5d46affb0250",
   "prevId": "261fd993-fb2c-43e7-89d6-cd58786c5f58",
   "version": "7",
   "dialect": "postgresql",
@@ -170,50 +170,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.homestays": {
-      "name": "homestays",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "location": {
-          "name": "location",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.invitations": {
       "name": "invitations",
       "schema": "",
@@ -308,8 +264,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "homestay_id": {
-          "name": "homestay_id",
+        "listing_id": {
+          "name": "listing_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -348,11 +304,11 @@
         }
       },
       "indexes": {
-        "listing_prices_homestay_platform_unique": {
-          "name": "listing_prices_homestay_platform_unique",
+        "listing_prices_listing_platform_unique": {
+          "name": "listing_prices_listing_platform_unique",
           "columns": [
             {
-              "expression": "homestay_id",
+              "expression": "listing_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -371,12 +327,12 @@
         }
       },
       "foreignKeys": {
-        "listing_prices_homestay_id_homestays_id_fk": {
-          "name": "listing_prices_homestay_id_homestays_id_fk",
+        "listing_prices_listing_id_listings_id_fk": {
+          "name": "listing_prices_listing_id_listings_id_fk",
           "tableFrom": "listing_prices",
-          "tableTo": "homestays",
+          "tableTo": "listings",
           "columnsFrom": [
-            "homestay_id"
+            "listing_id"
           ],
           "columnsTo": [
             "id"
@@ -398,6 +354,50 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.listings": {
+      "name": "listings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

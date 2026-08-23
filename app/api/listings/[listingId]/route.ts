@@ -1,15 +1,15 @@
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
-import { homestays } from '@/lib/db/schema';
+import { listings } from '@/lib/db/schema';
 import { errorResponse, parseId } from '@/lib/api/helpers';
 
-type Ctx = { params: Promise<{ homestayId: string }> };
+type Ctx = { params: Promise<{ listingId: string }> };
 
-// PATCH /api/homestays/:id — update name, location, notes.
+// PATCH /api/listings/:id — update name, location, notes.
 export async function PATCH(req: Request, ctx: Ctx) {
-  const { homestayId: rawId } = await ctx.params;
-  const homestayId = parseId(rawId);
-  if (!homestayId) return errorResponse(400, 'VALIDATION_ERROR', 'invalid homestay id');
+  const { listingId: rawId } = await ctx.params;
+  const listingId = parseId(rawId);
+  if (!listingId) return errorResponse(400, 'VALIDATION_ERROR', 'invalid listing id');
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object') {
@@ -35,20 +35,20 @@ export async function PATCH(req: Request, ctx: Ctx) {
   }
 
   const [row] = await db
-    .update(homestays)
+    .update(listings)
     .set(updates)
-    .where(eq(homestays.id, homestayId))
+    .where(eq(listings.id, listingId))
     .returning();
-  if (!row) return errorResponse(404, 'NOT_FOUND', 'homestay not found');
+  if (!row) return errorResponse(404, 'NOT_FOUND', 'listing not found');
   return Response.json(row);
 }
 
-// DELETE /api/homestays/:id — cascades to its listing prices (FK onDelete).
+// DELETE /api/listings/:id — cascades to its listing prices (FK onDelete).
 export async function DELETE(_req: Request, ctx: Ctx) {
-  const { homestayId: rawId } = await ctx.params;
-  const homestayId = parseId(rawId);
-  if (!homestayId) return errorResponse(400, 'VALIDATION_ERROR', 'invalid homestay id');
+  const { listingId: rawId } = await ctx.params;
+  const listingId = parseId(rawId);
+  if (!listingId) return errorResponse(400, 'VALIDATION_ERROR', 'invalid listing id');
 
-  await db.delete(homestays).where(eq(homestays.id, homestayId));
+  await db.delete(listings).where(eq(listings.id, listingId));
   return new Response(null, { status: 204 });
 }

@@ -1,6 +1,6 @@
 # Price Manager — Short-term Rental Price Manager
 
-Track your homestay's listed prices across **Airbnb, Booking.com, Trip.com** (customizable platforms), with per-platform **commission (hoa hồng)** and **discount campaigns**, and see the estimated **guest price** and **net you receive** on every channel.
+Track your listing's listed prices across **Airbnb, Booking.com, Trip.com** (customizable platforms), with per-platform **commission (hoa hồng)** and **discount campaigns**, and see the estimated **guest price** and **net you receive** on every channel.
 
 Built on the [Next.js SaaS Starter](https://github.com/nextjs/saas-starter) (Next.js 15 + React 19 + Tailwind 4 + shadcn/ui + Drizzle ORM + Postgres + JWT auth).
 
@@ -17,7 +17,7 @@ Built on the [Next.js SaaS Starter](https://github.com/nextjs/saas-starter) (Nex
 app/            # Next.js App Router pages (marketing, (dashboard), (login), api routes)
 components/ui/  # shadcn/ui primitives
 lib/
-  db/           # Drizzle schema (users/teams + platforms/homestays/listing_prices/campaigns), migrations
+  db/           # Drizzle schema (users/teams + platforms/listings/listing_prices/campaigns), migrations
   pricing/      # ★ domain core: discount rule engine (sum/best/priority/sequential) + presets + types (unit-tested)
   auth/         # JWT session (from starter)
   payments/     # Stripe (from starter — unused by MVP, see SPEC §8)

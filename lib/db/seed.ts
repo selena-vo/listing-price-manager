@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { stripe } from '../payments/stripe';
 import { db } from './drizzle';
-import { users, teams, teamMembers, platforms, homestays, listingPrices, campaigns } from './schema';
+import { users, teams, teamMembers, platforms, listings, listingPrices, campaigns } from './schema';
 import { hashPassword } from '@/lib/auth/session';
 import { PLATFORM_PRESETS } from '@/lib/pricing';
 
@@ -70,26 +70,26 @@ async function seedPlatformsAndDemoData() {
 
   console.log(`Platforms ready: ${platformRows.map((p) => p.name).join(', ')}`);
 
-  // Demo homestay + prices on every platform + one active Airbnb campaign
+  // Demo listing + prices on every platform + one active Airbnb campaign
   // (shows the priority-winner rule on the dashboard).
-  const existing = await db.select().from(homestays).limit(1);
+  const existing = await db.select().from(listings).limit(1);
   if (existing.length > 0) {
-    console.log('Demo homestay already exists — skipping.');
+    console.log('Demo listing already exists — skipping.');
     return;
   }
 
   const [demo] = await db
-    .insert(homestays)
+    .insert(listings)
     .values({
       name: 'Villa Biển Mũi Né',
       location: 'Mũi Né, Bình Thuận',
-      notes: 'Homestay demo — 2 phòng ngủ, hồ bơi',
+      notes: 'Listing demo — 2 phòng ngủ, hồ bơi',
     })
     .returning();
 
   await db.insert(listingPrices).values(
     platformRows.map((p) => ({
-      homestayId: demo.id,
+      listingId: demo.id,
       platformId: p.id,
       pricePerNight: 1200000,
       currency: 'VND',
@@ -111,7 +111,7 @@ async function seedPlatformsAndDemoData() {
     });
   }
 
-  console.log('Demo homestay + prices + Airbnb campaign seeded.');
+  console.log('Demo listing + prices + Airbnb campaign seeded.');
 }
 
 async function seed() {
