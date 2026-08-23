@@ -26,13 +26,23 @@ middleware.ts   # protects /dashboard
 
 ## Getting started (local)
 
-You need a **Postgres** database (Docker, local install, or a free [Neon](https://neon.tech) URL):
+You need a **Postgres** database — with colima + Docker on macOS:
+
+```bash
+brew install colima docker
+colima start
+docker run -d --name pm-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=price_manager -p 5432:5432 \
+  -v pm-postgres-data:/var/lib/postgresql/data postgres:16
+```
+
+(or use a free [Neon](https://neon.tech) URL instead.)
 
 ```bash
 pnpm install
 cp .env.example .env        # fill POSTGRES_URL (and AUTH_SECRET)
 pnpm db:migrate             # apply migrations
-pnpm db:seed                # creates test@test.com / admin123 + default team
+pnpm db:seed                # creates test@test.com / admin123 + default team + demo data
 pnpm dev                    # http://localhost:3000
 ```
 

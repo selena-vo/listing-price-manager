@@ -1,9 +1,17 @@
+import { eq } from 'drizzle-orm';
 import { stripe } from '../payments/stripe';
 import { db } from './drizzle';
-import { users, teams, teamMembers } from './schema';
+import { users, teams, teamMembers, platforms, homestays, listingPrices, campaigns } from './schema';
 import { hashPassword } from '@/lib/auth/session';
+import { PLATFORM_PRESETS } from '@/lib/pricing';
 
-async function createStripeProducts() {
+async function createStripeProductsIfConfigured() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key.startsWith('sk_test_placeholder')) {
+    console.log('Skipping Stripe products (no real STRIPE_SECRET_KEY yet).');
+    return;
+  }
+
   console.log('Creating Stripe products and prices...');
 
   const baseProduct = await stripe.products.create({
@@ -39,38 +47,115 @@ async function createStripeProducts() {
   console.log('Stripe products and prices created successfully.');
 }
 
-async function seed() {
-  const email = 'test@test.com';
-  const password = 'admin123';
-  const passwordHash = await hashPassword(password);
-
-  const [user] = await db
-    .insert(users)
-    .values([
-      {
-        email: email,
-        passwordHash: passwordHash,
-        role: "owner",
-      },
-    ])
+async function seedPlatformsAndDemoData() {
+  // Default platforms from SPEC §4 "Reference: real platform rules" presets.
+  const inserted = await db
+    .insert(platforms)
+    .values(
+      PLATFORM_PRESETS.map((p, i) => ({
+        name: p.name,
+        color: p.color,
+        sortOrder: i,
+        commissionRate: p.commissionRate,
+        discountRule: p.discountRule,
+      })),
+    )
+    .onConflictDoNothing()
     .returning();
 
-  console.log('Initial user created.');
+  const platformRows =
+    inserted.length > 0
+      ? inserted
+      : await db.select().from(platforms).orderBy(platforms.sortOrder);
 
-  const [team] = await db
-    .insert(teams)
+  console.log(`Platforms ready: ${platformRows.map((p) => p.name).join(', ')}`);
+
+  // Demo homestay + prices on every platform + one active Airbnb campaign
+  // (shows the priority-winner rule on the dashboard).
+  const existing = await db.select().from(homestays).limit(1);
+  if (existing.length > 0) {
+    console.log('Demo homestay already exists — skipping.');
+    return;
+  }
+
+  const [demo] = await db
+    .insert(homestays)
     .values({
-      name: 'Test Team',
+      name: 'Villa Biển Mũi Né',
+      location: 'Mũi Né, Bình Thuận',
+      notes: 'Homestay demo — 2 phòng ngủ, hồ bơi',
     })
     .returning();
 
-  await db.insert(teamMembers).values({
-    teamId: team.id,
-    userId: user.id,
-    role: 'owner',
-  });
+  await db.insert(listingPrices).values(
+    platformRows.map((p) => ({
+      homestayId: demo.id,
+      platformId: p.id,
+      pricePerNight: 1200000,
+      currency: 'VND',
+      note: null,
+    })),
+  );
 
-  await createStripeProducts();
+  const airbnb = platformRows.find((p) => p.name === 'Airbnb');
+  if (airbnb) {
+    await db.insert(campaigns).values({
+      platformId: airbnb.id,
+      name: 'New listing promo',
+      discountPercent: 10,
+      active: true,
+      priorityOrder: 1,
+      type: 'new_listing',
+      startsAt: null,
+      endsAt: null,
+    });
+  }
+
+  console.log('Demo homestay + prices + Airbnb campaign seeded.');
+}
+
+async function seed() {
+  const email = 'test@test.com';
+  const password = 'admin123';
+
+  const [existingUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (existingUser) {
+    console.log('User already exists — skipping user/team creation.');
+  } else {
+    const passwordHash = await hashPassword(password);
+
+    const [user] = await db
+      .insert(users)
+      .values({
+        email: email,
+        passwordHash: passwordHash,
+        role: 'owner',
+      })
+      .returning();
+
+    console.log('Initial user created.');
+
+    const [team] = await db
+      .insert(teams)
+      .values({
+        name: 'Test Team',
+      })
+      .returning();
+
+    await db.insert(teamMembers).values({
+      teamId: team.id,
+      userId: user.id,
+      role: 'owner',
+    });
+  }
+
+  await seedPlatformsAndDemoData();
+  await createStripeProductsIfConfigured();
 }
 
 seed()
