@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useListing } from '@/components/listing-context';
 import { computePrice } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
 import { formatVND } from '@/lib/format';
@@ -208,8 +209,8 @@ function ListingModal({ initial, onClose }: { initial?: Listing; onClose: () => 
 export default function DayBoard() {
   const { data, error, isLoading } = useSWR<DashboardData>('/api/dashboard', fetcher);
   const today = useMemo(() => new Date(), []);
+  const { listingId } = useListing();
   const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
-  const [listingId, setListingId] = useState<number | null>(null);
   const [baseTarget, setBaseTarget] = useState<{ listing: DListing; platform: DPlatform; current: ListingPrice | null } | null>(null);
   const [showAddListing, setShowAddListing] = useState(false);
 
@@ -245,19 +246,8 @@ export default function DayBoard() {
     <section className="p-4 lg:p-6">
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedListing?.id ?? ''}
-            onChange={(e) => setListingId(Number(e.target.value))}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
-            aria-label="Chọn listing"
-          >
-            {listings.length === 0 && <option value="">Chưa có listing</option>}
-            {listings.map((l) => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-          <span className="text-sm text-gray-500">Đơn vị tiền: VND</span>
+        <div className="text-sm text-gray-600">
+          Listing: <span className="font-medium">{selectedListing?.name ?? '—'}</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => go(-1)} aria-label="Tháng trước">

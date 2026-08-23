@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useListing } from '@/components/listing-context';
 import type { Platform, PlatformPreset } from '@/lib/pricing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ const RULE_LABELS: Record<string, string> = {
 
 interface Data {
   platforms: Platform[];
+  listings: { id: number; name: string }[];
 }
 
 function PlatformCard({ platform, onChanged }: { platform: Platform; onChanged: () => void }) {
@@ -157,17 +159,22 @@ function AddPlatform({ onChanged }: { onChanged: () => void }) {
 // --- S4 — Nền tảng (platforms) ---
 export default function PlatformsPage() {
   const { data, error, isLoading } = useSWR<Data>('/api/dashboard', fetcher);
+  const { listingId } = useListing();
 
   if (isLoading) return <div className="p-8 text-gray-500">Đang tải…</div>;
   if (error) return <div className="p-8 text-red-600">Không tải được dữ liệu.</div>;
 
   const platforms = data?.platforms ?? [];
+  const listings = data?.listings ?? [];
+  const selected = listings.find((l) => l.id === listingId) ?? listings[0];
 
   return (
     <section className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Nền tảng</h1>
-        <p className="text-sm text-gray-500">Hoa hồng (hoa hồng) và discount rule của từng nền tảng.</p>
+        <p className="text-sm text-gray-500">
+          Hoa hồng (hoa hồng) và discount rule của từng nền tảng (dùng chung cho listing <span className="font-medium">{selected?.name ?? '—'}</span>).
+        </p>
       </div>
       <AddPlatform onChanged={() => undefined} />
       <div className="grid gap-4 lg:grid-cols-2">

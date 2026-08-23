@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { useListing } from '@/components/listing-context';
 import type { Campaign, Platform } from '@/lib/pricing';
 import { CAMPAIGN_TYPES } from '@/lib/pricing';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 type DPlatform = Platform & { campaigns: Campaign[] };
 interface Data {
   platforms: DPlatform[];
+  listings: { id: number; name: string }[];
 }
 
 function CampaignRow({ campaign, showPriority, onChanged }: { campaign: Campaign; showPriority: boolean; onChanged: () => void }) {
@@ -163,19 +165,22 @@ function AddCampaignForm({ platform, onDone }: { platform: DPlatform; onDone: ()
 // --- S5 — Khuyến mãi (promotions) ---
 export default function PromotionsPage() {
   const { data, error, isLoading } = useSWR<Data>('/api/dashboard', fetcher);
+  const { listingId } = useListing();
   const [openForm, setOpenForm] = useState<number | null>(null);
 
   if (isLoading) return <div className="p-8 text-gray-500">Đang tải…</div>;
   if (error) return <div className="p-8 text-red-600">Không tải được dữ liệu.</div>;
 
   const platforms = data?.platforms ?? [];
+  const listings = data?.listings ?? [];
+  const selected = listings.find((l) => l.id === listingId) ?? listings[0];
 
   return (
     <section className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Khuyến mãi</h1>
         <p className="text-sm text-gray-500">
-          Các chiến dịch giảm giá theo khoảng ngày — ngày trong khoảng sẽ được đánh dấu trên bảng giá.
+          Trang này áp cho listing <span className="font-medium">{selected?.name ?? '—'}</span> — các chiến dịch giảm giá theo khoảng ngày.
         </p>
       </div>
       <div className="space-y-6">
