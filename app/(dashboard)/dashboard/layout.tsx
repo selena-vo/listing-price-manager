@@ -59,11 +59,28 @@ function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const main = [
+  // Listing-level items (scoped to the selected listing).
+  const listingItems = [
     { href: '/dashboard', icon: CalendarDays, label: 'Bảng giá theo ngày' },
-    { href: '/dashboard/promotions', icon: Tag, label: 'Khuyến mãi' },
-    { href: '/dashboard/platforms', icon: Globe, label: 'Nền tảng' }
+    { href: '/dashboard/promotions', icon: Tag, label: 'Khuyến mãi' }
   ];
+  // Platform-level item (global — higher level than a listing).
+  const platformItem = [{ href: '/dashboard/platforms', icon: Globe, label: 'Nền tảng' }];
+
+  function Item({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
+    return (
+      <Link key={href} href={href}>
+        <Button
+          variant={pathname === href ? 'secondary' : 'ghost'}
+          className={`my-1 w-full justify-start shadow-none ${pathname === href ? 'bg-gray-100' : ''}`}
+          onClick={() => setOpen(false)}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+        </Button>
+      </Link>
+    );
+  }
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -81,19 +98,10 @@ function Sidebar({ children }: { children: React.ReactNode }) {
         } lg:relative absolute inset-y-0 left-0 z-40`}
       >
         <nav className="h-full overflow-y-auto p-4">
-          <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Menu</div>
-          {main.map((it) => (
-            <Link key={it.href} href={it.href}>
-              <Button
-                variant={pathname === it.href ? 'secondary' : 'ghost'}
-                className={`my-1 w-full justify-start shadow-none ${pathname === it.href ? 'bg-gray-100' : ''}`}
-                onClick={() => setOpen(false)}
-              >
-                <it.icon className="h-4 w-4" />
-                {it.label}
-              </Button>
-            </Link>
-          ))}
+          <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Listing</div>
+          {listingItems.map((it) => <Item key={it.href} {...it} />)}
+          <div className="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Nền tảng</div>
+          {platformItem.map((it) => <Item key={it.href} {...it} />)}
         </nav>
       </aside>
 

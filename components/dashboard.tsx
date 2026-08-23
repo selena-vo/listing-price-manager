@@ -15,14 +15,12 @@ import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-type DPlatform = Platform;
-type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
+type DPlatform = Platform;type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
 interface DashboardData {
   platforms: DPlatform[];
   listings: DListing[];
 }
 
-const RULE_SHORT: Record<string, string> = { sum: 'S', best: 'B', priority: 'P', sequential: 'Q' };
 const WEEKDAYS = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']; // index = date.getDay()
 const MONTH_NAMES = [
   'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -238,7 +236,7 @@ export default function DayBoard() {
                     </button>
                   </div>
                   <div className="text-[11px] font-normal text-gray-400">
-                    {RULE_SHORT[p.discountRule] ?? ''} · hoa hồng {p.commissionRate}%
+                    Hoa hồng {p.commissionRate}%
                   </div>
                 </th>
               ))}
