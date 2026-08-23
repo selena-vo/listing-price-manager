@@ -50,7 +50,7 @@ function Sidebar({ children }: { children: React.ReactNode }) {
 
         {/* Drawer (mobile) / static sidebar (desktop) */}
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-white transition-transform duration-200 lg:static lg:z-auto lg:transform-none lg:border-r lg:border-gray-200 lg:bg-gray-50 ${
+          className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-white transition-transform duration-200 lg:static lg:z-auto lg:block lg:translate-x-0 lg:border-r lg:border-gray-200 lg:bg-gray-50 ${
             open ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
