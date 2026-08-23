@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ListingProvider } from '@/components/listing-context';
 import { CalendarDays, Tag, Globe, Menu } from 'lucide-react';
 
-// Starter-style sidebar menu (Menu only — Settings now live in the avatar dropdown).
+// Sidebar: on desktop a static left menu; on mobile a top "Menu" bar opening a left drawer.
 function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -22,11 +22,10 @@ function Sidebar({ children }: { children: React.ReactNode }) {
 
   function Item({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
     return (
-      <Link key={href} href={href}>
+      <Link key={href} href={href} onClick={() => setOpen(false)}>
         <Button
           variant={pathname === href ? 'secondary' : 'ghost'}
           className={`my-1 w-full justify-start shadow-none ${pathname === href ? 'bg-gray-100' : ''}`}
-          onClick={() => setOpen(false)}
         >
           <Icon className="h-4 w-4" />
           {label}
@@ -36,30 +35,36 @@ function Sidebar({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* Mobile toggle */}
-      <div className="lg:hidden flex items-center justify-between border-b border-gray-200 bg-white p-3">
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
         <span className="font-medium">Menu</span>
-        <Button variant="ghost" onClick={() => setOpen(!open)}>
+        <Button variant="ghost" size="sm" onClick={() => setOpen(true)} aria-label="Mở menu">
           <Menu className="h-5 w-5" />
         </Button>
       </div>
 
-      <aside
-        className={`w-64 shrink-0 border-r border-gray-200 bg-white lg:bg-gray-50 lg:block ${
-          open ? 'block' : 'hidden'
-        } lg:relative absolute inset-y-0 left-0 z-40`}
-      >
-        <nav className="h-full overflow-y-auto p-4">
-          <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Listing</div>
-          {listingItems.map((it) => <Item key={it.href} {...it} />)}
-          <div className="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Nền tảng</div>
-          {platformItem.map((it) => <Item key={it.href} {...it} />)}
-        </nav>
-      </aside>
+      <div className="relative flex flex-1 overflow-hidden">
+        {/* Backdrop on mobile when the drawer is open */}
+        {open && <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={() => setOpen(false)} />}
 
-      <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
-    </div>
+        {/* Drawer (mobile) / static sidebar (desktop) */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-white transition-transform duration-200 lg:static lg:z-auto lg:transform-none lg:border-r lg:border-gray-200 lg:bg-gray-50 ${
+            open ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <nav className="h-full overflow-y-auto p-4">
+            <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Listing</div>
+            {listingItems.map((it) => <Item key={it.href} {...it} />)}
+            <div className="mb-1 mt-4 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">Nền tảng</div>
+            {platformItem.map((it) => <Item key={it.href} {...it} />)}
+          </nav>
+        </aside>
+
+        <main className="min-w-0 flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+      </div>
+    </>
   );
 }
 
