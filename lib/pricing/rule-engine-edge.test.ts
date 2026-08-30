@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computePrice } from './rule-engine';
+import { computePrice, effectiveDeductionRate } from './rule-engine';
 import type { PriceInput } from './rule-engine';
 
 function camp(
@@ -81,5 +81,54 @@ describe('computePrice edge cases', () => {
   it('sequential: order matters (10% then 10% ≠ 20%)', () => {
     const r = computePrice({ listedPrice: 100000, commissionRate: 0, rule: 'sequential', campaigns: [camp(1, 10, { priority: 1 }), camp(2, 10, { priority: 2 })] });
     expect(r.guestPrice).toBeCloseTo(81000, 5); // 100000 × 0.9 × 0.9
+  });
+});
+
+describe('per-platform net deductions (Airbnb formula)', () => {
+  const AIRBNB = [
+    { kind: 'percentOfSWithVat', label: 'Phí Host', rate: 15.5, vatRate: 10 },
+    { kind: 'percentOfS', label: 'Thuế VAT', rate: 5 },
+    { kind: 'percentOfS', label: 'Thuế TNCN', rate: 2 },
+  ] as const;
+
+  it('effective rate = 24.05% (15.5×1.10 + 5 + 2)', () => {
+    expect(effectiveDeductionRate(AIRBNB as unknown as PriceInput['deductions'])).toBeCloseTo(24.05, 5);
+  });
+
+  it('promo day: S = 450000 → net = 341775 (= 450000 × 0.7595)', () => {
+    const r = computePrice({
+      listedPrice: 500000,
+      commissionRate: 3,
+      rule: 'priority',
+      campaigns: [camp(1, 10, { priority: 1 })],
+      deductions: AIRBNB as unknown as PriceInput['deductions'],
+    });
+    expect(r.guestPrice).toBe(450000);
+    expect(r.effectiveRate).toBeCloseTo(24.05, 5);
+    expect(r.deductionItems).toHaveLength(3);
+    expect(r.deductionItems[0]?.amount).toBeCloseTo(76725, 5); // 450000 × 0.155 × 1.10
+    expect(r.deductionItems[1]?.amount).toBe(22500); // VAT 5%
+    expect(r.deductionItems[2]?.amount).toBe(9000); // TNCN 2%
+    expect(r.commission).toBeCloseTo(108225, 5);
+    expect(r.net).toBeCloseTo(341775, 5);
+  });
+
+  it('no promo: S = 500000 → net = 379750 (= 500000 × 0.7595)', () => {
+    const r = computePrice({
+      listedPrice: 500000,
+      commissionRate: 3,
+      rule: 'priority',
+      campaigns: [],
+      deductions: AIRBNB as unknown as PriceInput['deductions'],
+    });
+    expect(r.net).toBeCloseTo(379750, 5);
+  });
+
+  it('without deductions falls back to simple commission %', () => {
+    const r = computePrice({ listedPrice: 500000, commissionRate: 15, rule: 'priority', campaigns: [] });
+    expect(r.effectiveRate).toBe(15);
+    expect(r.deductionItems).toHaveLength(1);
+    expect(r.deductionItems[0]?.label).toBe('Phí hoa hồng');
+    expect(r.net).toBe(425000);
   });
 });

@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -152,6 +153,7 @@ export const platforms = pgTable('platforms', {
   sortOrder: integer('sort_order').notNull().default(0),
   commissionRate: integer('commission_rate').notNull().default(15),
   discountRule: varchar('discount_rule', { length: 20 }).notNull().default('sum'),
+  netDeductions: jsonb('net_deductions'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

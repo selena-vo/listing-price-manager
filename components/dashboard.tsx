@@ -4,13 +4,18 @@ import { Fragment, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useListing } from '@/components/listing-context';
 import ListingModal from '@/components/listing-modal';
-import { computePrice } from '@/lib/pricing/rule-engine';
+import { computePrice, effectiveDeductionRate } from '@/lib/pricing/rule-engine';
 import type { Campaign, Listing, ListingPrice, Platform } from '@/lib/pricing';
 import { formatVND } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// 24.05 → "24.05"; 15 → "15"
+function fmtRate(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+}
 
 type DPlatform = Platform;
 type DListing = Listing & { prices: ListingPrice[]; platformIds: number[]; campaigns: Campaign[] };
@@ -187,7 +192,7 @@ export default function DayBoard() {
                     {p.name}
                   </div>
                   <div className="text-[11px] font-normal text-gray-400">
-                    Hoa hồng {p.commissionRate}%
+                    {(p.netDeductions?.length ?? 0) > 0 ? 'Phí & thuế' : 'Hoa hồng'} {fmtRate(effectiveDeductionRate(p.netDeductions, p.commissionRate))}%
                   </div>
                   {selectedListing && <BasePriceInput key={selectedListing.id} listing={selectedListing} platform={p} />}
                 </th>
@@ -220,7 +225,7 @@ export default function DayBoard() {
                       ? activeOnDate(selectedListing.campaigns.filter((c) => c.platformId === p.id), d)
                       : [];
                     const breakdown = price
-                      ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo, now: d })
+                      ? computePrice({ listedPrice: price.pricePerNight, commissionRate: p.commissionRate, rule: p.discountRule, campaigns: promo, now: d, deductions: p.netDeductions })
                       : null;
                     return (
                       <Fragment key={p.id}>
@@ -237,8 +242,11 @@ export default function DayBoard() {
                               {promo.length > 0 && (
                                 <div className="font-semibold text-blue-700">{formatVND(breakdown.guestPrice)}</div>
                               )}
-                              <div className="text-[10px] text-gray-400">
-                                phí {p.commissionRate}% · {formatVND(breakdown.commission)}
+                              <div
+                                className="text-[10px] text-gray-400"
+                                title={breakdown.deductionItems.map((i) => `${i.label}: ${formatVND(i.amount)}`).join('\n')}
+                              >
+                                {breakdown.deductionItems.length > 1 ? 'phí & thuế' : 'phí'} {fmtRate(breakdown.effectiveRate)}% · {formatVND(breakdown.commission)}
                               </div>
                             </div>
                           ) : (

@@ -58,6 +58,7 @@ async function seedPlatformsAndDemoData() {
         sortOrder: i,
         commissionRate: p.commissionRate,
         discountRule: p.discountRule,
+        netDeductions: p.netDeductions ?? null,
       })),
     )
     .onConflictDoNothing()

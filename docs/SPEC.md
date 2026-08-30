@@ -80,8 +80,12 @@ Seeded as defaults when a preset platform is added — every value is changeable
 For a **base price P** on a platform, and a given **date D**, let **D** = the platform's discount rule applied to the campaigns **whose date range covers D** (total discount; for `sequential`, applied multiplicatively):
 
 - set price (D) = P × (1 − total/100) — or the sequential product for `sequential`
-- fee (D) = set price × commission c/100
-- **net (D) = set price − fee**
+- **net (D) = set price − khấu trừ (thực nhận)**
+
+**Khấu trừ (thực nhận) — theo nền tảng:** mỗi nền tảng có thể có cấu hình khấu trừ riêng thay cho phí % đơn giản.
+
+- Mặc định: khấu trừ = set price × commission c/100 → net = S × (1 − c/100)
+- **Airbnb (công thức PO):** Phí Host S×15.5%×1.10 + Thuế VAT S×5% + Thuế TNCN S×2% → **net = S × (1 − 0.1705 − 0.05 − 0.02) = S × 0.7595**
 
 *(Percentages only for MVP — fixed fees out of scope, see §8. Commission on the set (guest-paid) amount — confirmed by PO.)*
 
@@ -168,3 +172,4 @@ For a **base price P** on a platform, and a given **date D**, let **D** = the pl
 | Aug 23, 2026 | **Stack re-initialized on Next.js SaaS Starter** (Postgres, auth & Stripe from starter, rule engine + schema added) | Dev |
 | Aug 23, 2026 | **Dashboard redesigned per PO mockup (spec v1.1):** S1 becomes a **month-by-day price board** (Giá cài đặt + Ròng sau phí per platform, promo-day highlight, today marked, month nav, listing selector, currency selector); added **S5 Khuyến mãi** tab; S4 Platforms no longer holds campaigns; base-price + per-day derivation model; Q11–Q15 added | Dev |
 | Aug 23, 2026 | **PO confirmed Q11–Q15**: one listing + selector · base-price + date-ranged campaigns · VND only (multi-currency future) · **no Export/Import JSON in MVP (backlog)** · presets = mockup commissions (3/15/10) | PO |
+| Aug 23, 2026 | **Net formula per platform (PO): Airbnb thực nhận = S × 0.7595** (S = giá sau giảm; Phí Host 15.5%×1.10 + Thuế VAT 5% + Thuế TNCN 2%); các nền tảng khác giữ phí % đơn giản | PO |

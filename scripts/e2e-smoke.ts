@@ -97,15 +97,14 @@ async function main() {
   const myCampaign = mine?.campaigns?.find((c: any) => c.id === campaignBody?.id);
   check('listing campaign present', !!myCampaign);
 
-  // 8. day-board math: promo day (base 500k, −10%, 3% fee → 450k / 13.5k / 436.5k) & normal day (485k)
+  // 8. day-board math for the promo day — Airbnb uses per-platform net deductions (15.5%×1.10 + 5% + 2% → 0.7595)
   if (mine && myCampaign) {
     const promo = mine.campaigns.filter((c: any) => c.platformId === airbnb.id);
-    const promoDay = computePrice({ listedPrice: 500000, commissionRate: airbnb.commissionRate, rule: airbnb.discountRule, campaigns: promo, now: new Date('2026-08-07T12:00:00Z') });
+    const promoDay = computePrice({ listedPrice: 500000, commissionRate: airbnb.commissionRate, rule: airbnb.discountRule, campaigns: promo, deductions: airbnb.netDeductions, now: new Date('2026-08-07T12:00:00Z') });
     check('promo day: set 450000', promoDay.guestPrice === 450000, promoDay);
-    check('promo day: fee 13500', promoDay.commission === 13500, promoDay);
-    check('promo day: net 436500', promoDay.net === 436500, promoDay);
-    const normalDay = computePrice({ listedPrice: 500000, commissionRate: airbnb.commissionRate, rule: airbnb.discountRule, campaigns: promo, now: new Date('2026-08-12T12:00:00Z') });
-    check('normal day: net 485000', normalDay.net === 485000, normalDay);
+    check('promo day: net 341775 (×0.7595)', Math.abs(promoDay.net - 341775) < 1, promoDay);
+    const normalDay = computePrice({ listedPrice: 500000, commissionRate: airbnb.commissionRate, rule: airbnb.discountRule, campaigns: promo, deductions: airbnb.netDeductions, now: new Date('2026-08-12T12:00:00Z') });
+    check('normal day: net 379750 (×0.7595)', Math.abs(normalDay.net - 379750) < 1, normalDay);
   }
 
   // 9. cleanup (delete cascades prices/platforms/campaigns)
